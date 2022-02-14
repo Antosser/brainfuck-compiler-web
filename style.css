@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    height: 500px;
+    flex-wrap: wrap;
+}
+
+.item {
+    min-width: 300px;
+    flex: 1;
+    padding: 5px;
+}
+
+textarea {
+    width: 100%;
+    height: calc(100% - 61px);
+    box-sizing: border-box;
+    resize: none;
+}
+
+.label {
+    font-size: 50px;
+    font-family: Impact, fantasy;
+    text-align: center;
+    box-sizing: border-box;
+}
