@@ -34,5 +34,7 @@ The code uses an assembly-like sytax so don't put any ; and the end of lines
 - **#if** {variable1} var {variable2} - Execute code if variable1 == variable2
 - **#if** {variable1} num {number} - Execute code if variable1 == number
 - **#while** {variable} - Execute code code while variable is not 0
-- **#end** - End scope / while / if / ect.
+- **#end** - End scope / while / if / ect
+- **#scope** - Open a scope
+- **#pause** - Pause code
 
