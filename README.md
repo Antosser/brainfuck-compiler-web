@@ -29,6 +29,8 @@ The code uses an assembly-like sytax so don't put any ; and the end of lines
 - **input** {variable} - Set value of variable to the pressed key
 - **print** {variable} - Print ASCII character of variable
 - **printletter** {character} - Print character
+- **printstr** {string} - Print string
+- **printl** {string} - Print string ending with \n
 
 #### Scoping
 - **#if** {variable1} var {variable2} - Execute code if variable1 == variable2
