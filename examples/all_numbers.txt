@@ -1,0 +1,30 @@
+var i
+add i 1
+def newl
+
+#while i
+  var one
+  var hun
+  var ten
+  var tenhun
+
+  todec i one ten hun
+  copy ten tenhun
+  copy hun tenhun
+  #ifn0 hun
+    tostr hun
+    print hun
+  #endif
+  #ifn0 tenhun
+    tostr ten
+    print ten
+  #endif
+  tostr one
+  print one
+  clear one
+  clear ten
+  clear hun
+  newl
+
+  add i 1
+#endwhile

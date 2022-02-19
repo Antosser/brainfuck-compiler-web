@@ -1,0 +1,71 @@
+var a
+var b
+
+input
+copy input b
+toint input
+copy input iftemp
+#while iftemp
+  clear iftemp
+  print b
+  clear b
+#endwhile
+multiply input a 10
+input
+print input
+toint input
+move input a
+
+def newl
+def space
+space
+printletter +
+space
+
+input
+copy input b
+toint input
+copy input iftemp
+#while iftemp
+  clear iftemp
+  print b
+  clear b
+#endwhile
+multiply input a 10
+input
+print input
+toint input
+move input a
+
+space
+printletter =
+space
+
+var one
+var ten
+var hun
+todec a one ten hun
+tostr one
+
+copy hun iftemp
+#while iftemp
+  clear iftemp
+  tostr hun
+  print hun
+#endwhile
+copy ten iftemp
+#while iftemp
+  clear iftemp
+  tostr ten
+  print ten
+#endwhile
+print one
+
+clear one
+clear ten
+clear hun
+
+newl
+newl
+printletter :
+printletter )

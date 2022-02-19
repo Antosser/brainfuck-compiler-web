@@ -1,0 +1,36 @@
+var a
+var b
+add b 1
+var c
+
+var one
+var ten
+var hun
+var i
+
+def newl
+
+add i 14
+#while i
+  todec a one ten hun
+  tostr one
+  #ifn0 hun
+    tostr hun
+    print hun
+  #endif
+  #ifn0 ten
+    tostr ten
+    print ten
+  #endif
+  print one
+  clear one
+  clear ten
+  clear hun
+  newl
+
+  move a c
+  move b a
+  move c b
+  copy a b
+add i -1
+#endwhile

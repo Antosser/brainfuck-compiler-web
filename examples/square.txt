@@ -1,0 +1,16 @@
+var o
+addletter o O
+def newl
+
+var i
+add i 6
+#while i
+  var j
+  add j 10
+  #while j
+    print o
+    add j -1
+  #endwhile
+  add i -1
+  newl
+#endwhile

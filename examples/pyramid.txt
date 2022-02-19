@@ -1,0 +1,35 @@
+var dash
+addletter dash -
+
+def newl
+def space
+
+var i
+var j
+var k
+
+add i 1
+add j 10
+
+#while j
+  copy j k
+  #while k
+    space
+    add k -1
+  #endwhile
+
+  copy i k
+  #while k
+    print dash
+    add k -1
+  #endwhile
+
+  copy j k
+  #while k
+    space
+    add k -1
+  #endwhile
+  newl
+  add i 2
+  add j -1
+#endwhile
