@@ -33,7 +33,7 @@ class Scope {
 }
 
 var variables = new Map;
-variables.set('iftemp', 0);
+variables.set('temp2', 0);
 variables.set('temp', 1);
 var usedmemory = [0, 1];
 var position = 0;
@@ -263,10 +263,11 @@ var functions = {
         result += '.';
     },
     printletter(args) {
-        testArgs('printletter', args, 1);;
-        functions.set(['temp', args[0].charCodeAt(0)])
-        move('temp');
+        testArgs('printletter', args, 1);
+        functions.set(['temp2', args[0].charCodeAt(0)]);
+        move('temp2');
         result += '.';
+        functions.clear(['temp2']);
     },
     if(args) {
         testArgs('#if', args, 3);
@@ -305,8 +306,11 @@ var functions = {
         }
     },
     else(args) {
-        
-    }
+        functions.set(['temp', -1]);
+        functions.end([]);
+        functions.add(['temp', 1]);
+        functions.while(['temp']);
+    },
 };
 
 var commands = {
