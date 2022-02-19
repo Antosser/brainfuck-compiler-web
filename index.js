@@ -24,6 +24,22 @@ var preprocessor = [
     text => text.split('\n').filter(n => n).join('\n'),
 ];
 
+var postprocessor = [
+    // \n every 50 characters
+    text => {
+        let postprocessed = '';
+
+        for (let i = 0; i < text.length; i++) {
+            postprocessed += text[i];
+            if ((i + 1) % 50 == 0) {
+                postprocessed += '\n';
+            }
+        }
+
+        return postprocessed;
+    }
+]
+
 class Scope {
     constructor(type, variable) {
         this.type = type;
@@ -396,15 +412,10 @@ $('#build').click(() => {
             throw new Error("Error");
         }
     }
-    
-    let postprocessed = '';
 
-    for (let i = 0; i < result.length; i++) {
-        postprocessed += result[i];
-        if ((i + 1) % 50 == 0) {
-            postprocessed += '\n';
-        }
+    for (let i = 0; i < postprocessor.length; i++) {
+        result = postprocessor[i](result);
     }
-
-    $('#output').val(postprocessed);
+    
+    $('#output').val(result);
 });
