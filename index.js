@@ -279,14 +279,14 @@ var functions = {
             functions.add([args[2], -1]);
             functions.end([]);
             
-            functions.add(['temp', 1]);
+            functions.add(['temp2', 1]);
             functions.while([args[2]]);
             functions.clear([args[2]]);
-            functions.add(['temp', -1]);
+            functions.add(['temp2', -1]);
             functions.end([]);
 
-            functions.while(['temp']);
-            functions.clear(['temp']);
+            functions.while(['temp2']);
+            functions.clear(['temp2']);
         }
         else if (args[1] == 'num') {
             functions.add(['temp', args[2]]);
@@ -310,6 +310,35 @@ var functions = {
         functions.end([]);
         functions.add(['temp', 1]);
         functions.while(['temp']);
+        functions.clear(['temp']);
+    },
+    printstr(args) {
+        testMoreArgs('printstr', args, 1);
+
+        let value = 0;
+        let combinedStrings = args.join(' ');
+        for (let i = 0; i < combinedStrings.length; i++) {
+            functions.add(['temp2', combinedStrings.charCodeAt(i) - value]);
+            value = combinedStrings.charCodeAt(i);
+            functions.print(['temp2']);
+        }
+        functions.clear(['temp2']);
+    },
+    printl(args) {
+        testMoreArgs('printstr', args, 1);
+
+        let value = 0;
+        let combinedStrings = args.join(' ');
+        for (let i = 0; i < combinedStrings.length; i++) {
+            functions.add(['temp2', combinedStrings.charCodeAt(i) - value]);
+            value = combinedStrings.charCodeAt(i);
+            functions.print(['temp2']);
+        }
+
+        functions.add(['temp2', 10 - value]);
+        functions.print(['temp2']);
+
+        functions.clear(['temp2']);
     },
 };
 
@@ -328,6 +357,8 @@ var commands = {
     "input": functions.input,
     "print": functions.print,
     "printletter": functions.printletter,
+    "printstr": functions.printstr,
+    "printl": functions.printl,
     "#if": functions.if,
     "#else": functions.else,
 };
