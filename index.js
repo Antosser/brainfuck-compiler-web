@@ -272,8 +272,9 @@ var functions = {
     if(args) {
         testArgs('#if', args, 3);
         varExists(args[0]);
-        varExists(args[2]);
         if (args[1] == 'var') {
+            varExists(args[2]);
+
             functions.while([args[0]]);
             functions.add([args[0], -1]);
             functions.add([args[2], -1]);
@@ -289,21 +290,28 @@ var functions = {
             functions.clear(['temp2']);
         }
         else if (args[1] == 'num') {
-            functions.add(['temp', args[2]]);
+            functions.add(['temp2', args[2]]);
             functions.while([args[0]]);
             functions.add([args[0], -1]);
-            functions.add(['temp', -1]);
-            functions.end([]);
-            
-            functions.add(['temp2', 1]);
-            functions.while(['temp']);
-            functions.clear(['temp']);
             functions.add(['temp2', -1]);
             functions.end([]);
 
+            functions.move(['temp2', 'temp'])
+            functions.while(['temp']);
+            functions.clear(['temp']);
+            functions.add(['temp2', 1]);
+            functions.end([]);
+
+            functions.add(['temp2', -1]);
             functions.while(['temp2']);
             functions.clear(['temp2']);
         }
+    },
+    ifn(args) {
+        testArgs('#ifn', args, 3);
+        
+        functions.if(args);
+        functions.else([]);
     },
     else(args) {
         functions.set(['temp', -1]);
@@ -389,5 +397,14 @@ $('#build').click(() => {
         }
     }
     
-    $('#output').val(result);
+    let postprocessed = '';
+
+    for (let i = 0; i < result.length; i++) {
+        postprocessed += result[i];
+        if ((i + 1) % 50 == 0) {
+            postprocessed += '\n';
+        }
+    }
+
+    $('#output').val(postprocessed);
 });
