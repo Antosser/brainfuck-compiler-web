@@ -510,6 +510,7 @@ var commands = {
     "goto": functions.goto,
     "printdec": functions.printdec,
     "switch": functions.switch,
+    "newl": functions.newl,
 };
 
 $('#build').click(() => {

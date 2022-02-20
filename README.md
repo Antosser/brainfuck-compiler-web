@@ -34,6 +34,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of each lin
 - **printstr** {string} - Print string
 - **printl** {string} - Print string ending with \n
 - **printdec** {variable} - Print variable as decimal integer
+- **newl** - End line
 
 #### Scoping
 - **#if** {variable1} var {variable2} - Execute code if variable1 == variable2
