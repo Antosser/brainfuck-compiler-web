@@ -28,3 +28,7 @@ textarea {
     text-align: center;
     box-sizing: border-box;
 }
+
+#rmLocalStorage {
+    display: none;
+}
