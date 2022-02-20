@@ -34,7 +34,7 @@ var preprocessor = [
         let arr = text.split('\n');
 
         if (arr.includes('newl')) {
-            text = 'var newl\nadd newl 20\n' + text;
+            text = 'var newl\nadd newl 10\n' + text;
         }
         return text;
     }
