@@ -11,7 +11,7 @@ Brainfuck was designed to be the hardest programming language ever but I made a 
 - Your code uses scopes. If a variable goes out of scope it's memory will be cleared
 
 ## Code syntax
-The code uses an assembly-like sytax so don't put any ; and the end of lines
+The code uses an assembly-like syntax so don't put any ; and the end of lines
 
 ### Commands
 #### Assignment
