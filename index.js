@@ -408,7 +408,7 @@ $('#build').click(() => {
             commands[args[i][0]](args[i].slice(1));
         }
         else {
-            $('#output').val(`Error: Command ${args[i][0]} does not exist.`)
+            $('#output').val(`Error: Command ${args[i][0]} does not exist.`);
             throw new Error("Error");
         }
     }
@@ -430,4 +430,10 @@ else {
 
 $('#input').on('input', () => {
     localStorage.setItem('bfc-text', $('#input').val());
+});
+
+$('#rmLocalStorage').click(() => {
+    $('#input').val('');
+    $('#output').val('');
+    localStorage.setItem('bfc-text', '');
 });
