@@ -17,6 +17,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of each lin
 #### Assignment
 - **var** {variable} - Create variable
 - **move** {variable1} {variable2} - Move value of variable1 to variable2
+- **swtich** {variable1} {variable2} - Switch values of variable1 and variable2
 - **copy** {variable1} {variable2} (variable3) ...- Copy value of varaiable1 to variable2 and optioanally var3, var4, ...
 - **set** {variable} {number} - Set value to to a variable
 - **clear** {variable} - Clear variable
