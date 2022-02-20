@@ -343,7 +343,10 @@ var functions = {
             functions.while(['temp2']);
             functions.clear(['temp2']);
         }
-        else if (args[1] == 'num') {
+        else if (args[1] == 'num' || args[1] == 'letter') {
+            if (args[1] == 'letter') {
+                args[1] = args[1].charCodeAt(0);
+            }
             functions.copy([args[0], 'temp3']);
 
             functions.add(['temp2', args[2]]);
