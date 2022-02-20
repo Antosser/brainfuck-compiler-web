@@ -39,4 +39,5 @@ The code uses an assembly-like sytax so don't put any ; and the end of lines
 - **#end** - End scope / while / if / ect
 - **#scope** - Open a scope
 - **#pause** - Pause code
-
+- **#iftrue** {variable} - Execute code if variable is non zero
+- **#iffalse** {variable} - Execute code if variable is zero
