@@ -471,6 +471,17 @@ var functions = {
         functions.move([args[1], args[0]]);
         functions.move(['temp', args[1]]);
     },
+    newl(args) {
+        testArgs('newl', args, 0);
+
+        if (variables.has('newl')) {
+            functions.print(['newl']);
+        }
+        else {
+            functions.createVariable(['newl']);
+            functions.add(['newl', 10])
+        }
+    },
 };
 
 var commands = {
