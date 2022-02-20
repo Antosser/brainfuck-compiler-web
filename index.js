@@ -1,3 +1,9 @@
+var variables = new Map();
+var usedmemory = [];
+var position = 0;
+var result = '';
+var scopes = [];
+
 var preprocessor = [
     // Trim each line
     text => {
@@ -37,7 +43,7 @@ var postprocessor = [
         }
 
         return postprocessed;
-    }
+    },
 ]
 
 class Scope {
@@ -47,14 +53,6 @@ class Scope {
         this.variable = variable;
     }
 }
-
-var variables = new Map;
-variables.set('temp2', 0);
-variables.set('temp', 1);
-var usedmemory = [0, 1];
-var position = 0;
-var result = '';
-var scopes = [new Scope('scope')];
 
 var testArgs = (name, args, len) => {
     if (args.length != len) {
@@ -71,7 +69,7 @@ var testMoreArgs = (name, args, len) => {
 
 var varExists = varname => {
     if (!variables.has(varname)) {
-        $('#output').val(`Error: ${varname} does not exist.`)
+        $('#output').val(`Error: Variable ${varname} does not exist.`)
         throw new Error("Code error");
     }
 };
@@ -114,20 +112,18 @@ var move = varname => {
 var functions = {
     createVariable(args) {
         testArgs('var', args, 1)
-        if (variables.has(args[0])) {
-            $('#output').val('Error: Redeclaration of variable: ' + args[1])
-            throw new Error("Error");
-        }
-        nextSpace = 0;
-        for (let i = 0; true; i++) {
-            if (!usedmemory.includes(i)) {
-                nextSpace = i;
-                break;
+        if (!variables.has(args[0])) {
+            nextSpace = 0;
+            for (let i = 0; true; i++) {
+                if (!usedmemory.includes(i)) {
+                    nextSpace = i;
+                    break;
+                }
             }
+            variables.set(args[0], nextSpace);
+            usedmemory.push(nextSpace);
+            scopes[scopes.length - 1].variables.push(nextSpace);
         }
-        variables.set(args[0], nextSpace);
-        usedmemory.push(nextSpace);
-        scopes[scopes.length - 1].variables.push(nextSpace);
     },
     add(args) {
         let num = parseInt(args[1]);
@@ -288,17 +284,34 @@ var functions = {
     if(args) {
         testArgs('#if', args, 3);
         varExists(args[0]);
+        functions.createVariable(['temp3']);
+    
         if (args[1] == 'var') {
             varExists(args[2]);
 
-            functions.while([args[0]]);
-            functions.add([args[0], -1]);
-            functions.add([args[2], -1]);
+            // functions.copy([args[0], 'temp']);
+            // functions.copy([args[2], 'temp3']);
+            functions.move([args[0], 'temp2'])
+            functions.while(['temp2']);
+            functions.add([args[0], 1]);
+            functions.add(['temp', 1]);
+            functions.add(['temp2', -1]);
+            functions.end([]);
+            functions.move([args[2], 'temp2'])
+            functions.while(['temp2']);
+            functions.add([args[2], 1]);
+            functions.add(['temp3', 1]);
+            functions.add(['temp2', -1]);
+            functions.end([]);
+
+            functions.while(['temp']);
+            functions.add(['temp', -1]);
+            functions.add(['temp3', -1]);
             functions.end([]);
             
             functions.add(['temp2', 1]);
-            functions.while([args[2]]);
-            functions.clear([args[2]]);
+            functions.while(['temp3']);
+            functions.clear(['temp3']);
             functions.add(['temp2', -1]);
             functions.end([]);
 
@@ -306,9 +319,11 @@ var functions = {
             functions.clear(['temp2']);
         }
         else if (args[1] == 'num') {
+            functions.copy([args[0], 'temp3']);
+
             functions.add(['temp2', args[2]]);
-            functions.while([args[0]]);
-            functions.add([args[0], -1]);
+            functions.while(['temp3']);
+            functions.add(['temp3', -1]);
             functions.add(['temp2', -1]);
             functions.end([]);
 
@@ -364,6 +379,60 @@ var functions = {
 
         functions.clear(['temp2']);
     },
+    iftrue(args) {
+        testArgs('#iftrue', args, 1);
+        varExists(args[0]);
+
+        functions.copy([args[0], 'temp2']);
+        functions.while(['temp2']);
+        functions.clear(['temp2']);
+    },
+    iffalse(args) {
+        testArgs('#iffalse', args, 1);
+        varExists(args[0]);
+
+        functions.iftrue([args[0]]);
+        functions.add(['temp', 1]);
+        functions.end([]);
+        functions.add(['temp', -1]);
+        functions.while(['temp']);
+        functions.clear(['temp']);
+    },
+    imove(args) {
+        testArgs('imove', args, 2);
+        varExists(args[0]);
+        varExists(args[1]);
+
+        functions.while([args[0]]);
+        functions.add([args[0], -1]);
+        functions.add([args[1], -1]);
+        functions.end([]);
+    },
+    divnum(args) {
+        testArgs('div', args, 3);
+        varExists(args[0]);
+        varExists(args[2]);
+        functions.createVariable(['temp4'])
+        let num = parseInt(args[1]);
+
+        functions.move([args[0], 'temp4']);
+        functions.while(['temp4']);
+        functions.add(['temp4', -1]);
+        functions.add([args[2], 1]);
+        functions.if([args[2], 'num', num]);
+        functions.clear([args[2]]);
+        functions.add([args[0], 1]);
+        functions.end([]);
+
+        functions.move([args[2], 'temp2']);
+        functions.add([args[2], num - 1]);
+        functions.imove(['temp2', args[2]]);
+    },
+    goto(args) {
+        testArgs('move', args, 1);
+        varExists(args[0]);
+        move(args[0]);
+    },
 };
 
 var commands = {
@@ -372,6 +441,7 @@ var commands = {
     "clear": functions.clear,
     "set": functions.set,
     "move": functions.move,
+    "imove": functions.imove,
     "copy": functions.copy,
     "multiply": functions.multiply,
     "#pause": functions.pause,
@@ -383,12 +453,16 @@ var commands = {
     "printletter": functions.printletter,
     "printstr": functions.printstr,
     "printl": functions.printl,
+    "divnum": functions.divnum,
     "#if": functions.if,
+    "#iftrue": functions.iftrue,
+    "#iffalse": functions.iffalse,
     "#else": functions.else,
+    "goto": functions.goto,
 };
 
 $('#build').click(() => {
-    variables = new Map;
+    variables = new Map();
     variables.set('temp2', 0);
     variables.set('temp', 1);
     usedmemory = [0, 1];
