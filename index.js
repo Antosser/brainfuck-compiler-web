@@ -419,3 +419,15 @@ $('#build').click(() => {
     
     $('#output').val(result);
 });
+
+// Localstorage
+if (localStorage.getItem('bfc-text') === null) {
+    localStorage.setItem('bfc-text', '');
+}
+else {
+    $('#input').val(localStorage.getItem('bfc-text'));
+}
+
+$('#input').on('input', () => {
+    localStorage.setItem('bfc-text', $('#input').val());
+});
