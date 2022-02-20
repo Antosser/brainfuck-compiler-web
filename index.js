@@ -28,6 +28,16 @@ var preprocessor = [
 
     // Remove empty lines
     text => text.split('\n').filter(n => n).join('\n'),
+
+    // Newl
+    text => {
+        let arr = text.split('\n');
+
+        if (arr.includes('newl')) {
+            text = 'var newl\nadd newl 20\n' + text;
+        }
+        return text;
+    }
 ];
 
 var postprocessor = [
@@ -474,13 +484,7 @@ var functions = {
     newl(args) {
         testArgs('newl', args, 0);
 
-        if (variables.has('newl')) {
-            functions.print(['newl']);
-        }
-        else {
-            functions.createVariable(['newl']);
-            functions.add(['newl', 10])
-        }
+        functions.print(['newl']);
     },
 };
 
