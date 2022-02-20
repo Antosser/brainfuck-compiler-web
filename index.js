@@ -423,10 +423,7 @@ var functions = {
         functions.clear([args[2]]);
         functions.add([args[0], 1]);
         functions.end([]);
-
-        functions.move([args[2], 'temp2']);
-        functions.add([args[2], num - 1]);
-        functions.imove(['temp2', args[2]]);
+        functions.end([]);
     },
     goto(args) {
         testArgs('move', args, 1);
@@ -492,6 +489,7 @@ $('#build').click(() => {
     }
     
     $('#output').val(result);
+    console.log(variables);
 });
 
 // Localstorage
