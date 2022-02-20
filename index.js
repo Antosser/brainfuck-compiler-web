@@ -412,7 +412,7 @@ var functions = {
         testArgs('div', args, 3);
         varExists(args[0]);
         varExists(args[2]);
-        functions.createVariable(['temp4'])
+        functions.createVariable(['temp4']);
         let num = parseInt(args[1]);
 
         functions.move([args[0], 'temp4']);
@@ -429,6 +429,47 @@ var functions = {
         testArgs('move', args, 1);
         varExists(args[0]);
         move(args[0]);
+    },
+    printdec(args) {
+        testArgs('printdec', args, 1);
+        varExists(args[0]);
+        functions.createVariable(['temp4']);
+        functions.createVariable(['printdec-one']);
+        functions.createVariable(['printdec-ten']);
+        functions.createVariable(['printdec-hun']);
+
+        functions.clear(['printdec-one']);
+        functions.clear(['printdec-ten']);
+        functions.clear(['printdec-hun']);
+
+        functions.copy([args[0], 'printdec-one']);
+        functions.divnum(['printdec-one', 10, 'printdec-ten']);
+        functions.switch(['printdec-one', 'printdec-ten']);
+        functions.divnum(['printdec-ten', 10, 'printdec-hun']);
+        functions.switch(['printdec-ten', 'printdec-hun']);
+
+        functions.copy(['printdec-hun', 'temp4']);
+        functions.iftrue(['temp4']);
+        functions.add(['printdec-hun', 48]);
+        functions.print(['printdec-hun']);
+        functions.end([]);
+        functions.copy(['printdec-ten', 'temp4']);
+        functions.iftrue(['temp4']);
+        functions.add(['printdec-ten', 48]);
+        functions.print(['printdec-ten']);
+        functions.end([]);
+        functions.clear(['temp4']);
+        functions.add(['printdec-one', 48]);
+        functions.print(['printdec-one']);
+    },
+    switch(args) {
+        testArgs('switch', args, 2);
+        varExists(args[0]);
+        varExists(args[1]);
+
+        functions.move([args[0], 'temp']);
+        functions.move([args[1], args[0]]);
+        functions.move(['temp', args[1]]);
     },
 };
 
@@ -456,6 +497,8 @@ var commands = {
     "#iffalse": functions.iffalse,
     "#else": functions.else,
     "goto": functions.goto,
+    "printdec": functions.printdec,
+    "switch": functions.switch,
 };
 
 $('#build').click(() => {
