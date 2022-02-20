@@ -8,7 +8,7 @@ Brainfuck was designed to be the hardest programming language ever but I made a 
 4. Copy the code from the textarea below "Ouput" and paste it into wherever you interpret brainfuck
 
 ## Features
-- Your code uses scopes. If a variable goes out of scope it's memory will be creared
+- Your code uses scopes. If a variable goes out of scope it's memory will be cleared
 
 ## Code syntax
 The code uses an assembly-like sytax so don't put any ; and the end of lines
