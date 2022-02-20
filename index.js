@@ -29,12 +29,15 @@ var preprocessor = [
     // Remove empty lines
     text => text.split('\n').filter(n => n).join('\n'),
 
-    // Newl
+    // Newl and Space
     text => {
         let arr = text.split('\n');
 
         if (arr.includes('newl')) {
             text = 'var newl\nadd newl 10\n' + text;
+        }
+        if (arr.includes('space')) {
+            text = 'var space\nadd space 32\n' + text;
         }
         return text;
     }
@@ -47,7 +50,7 @@ var postprocessor = [
 
         for (let i = 0; i < text.length; i++) {
             postprocessed += text[i];
-            if ((i + 1) % 50 == 0) {
+            if ((i + 1) % 100 == 0) {
                 postprocessed += '\n';
             }
         }
@@ -291,6 +294,18 @@ var functions = {
         result += '.';
         functions.clear(['temp2']);
     },
+    addletter(args) {
+        testArgs('addletter', args, 2);
+        varExists(args[0]);
+
+        functions.add([args[0], args[1].charCodeAt(0)]);
+    },
+    setletter(args) {
+        testArgs('setletter', args, 2);
+        varExists(args[0]);
+
+        functions.set([args[0], args[1].charCodeAt(0)]);
+    },
     if(args) {
         testArgs('#if', args, 3);
         varExists(args[0]);
@@ -486,11 +501,25 @@ var functions = {
 
         functions.print(['newl']);
     },
+    space(args) {
+        testArgs('space', args, 0);
+
+        functions.print(['space']);
+    },
+    for(args) {
+        testArgs('#for', args, 1);
+        varExists(args[0]);
+
+        functions.while([args[0]]);
+        functions.add([args[0], -1]);
+    },
 };
 
 var commands = {
     "var": functions.createVariable,
     "add": functions.add,
+    "addletter": functions.addletter,
+    "setletter": functions.setletter,
     "clear": functions.clear,
     "set": functions.set,
     "move": functions.move,
@@ -498,6 +527,7 @@ var commands = {
     "copy": functions.copy,
     "multiply": functions.multiply,
     "#pause": functions.pause,
+    "#for": functions.for,
     "#while": functions.while,
     "#end": functions.end,
     "#scope": functions.scope,
@@ -515,6 +545,7 @@ var commands = {
     "printdec": functions.printdec,
     "switch": functions.switch,
     "newl": functions.newl,
+    "space": functions.space,
 };
 
 $('#build').click(() => {
