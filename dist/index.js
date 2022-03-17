@@ -1,38 +1,44 @@
-var variables = new Map();
-var usedmemory = [];
-var position = 0;
-var result = '';
-var scopes = [];
-
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
+var variables;
+var usedmemory;
+var position;
+var result;
+var scopes;
 var preprocessor = [
     // Trim each line
-    text => {
-        let result = text.split('\n')
-        for (let i = 0; i < result.length; i++) {
+    function (text) {
+        var result = text.split('\n');
+        for (var i = 0; i < result.length; i++) {
             result[i] = result[i].trim();
         }
         return result.join('\n');
     },
-
     // Remove comments
-    text => {
-        let textsplit = text.split('\n')
-        let result = '';
-        for (let i = 0; i < textsplit.length; i++) {
+    function (text) {
+        var textsplit = text.split('\n');
+        var result = "";
+        for (var i = 0; i < textsplit.length; i++) {
             if (!textsplit[i].startsWith('//')) {
                 result += textsplit[i] + '\n';
             }
         }
         return result;
     },
-
     // Remove empty lines
-    text => text.split('\n').filter(n => n).join('\n'),
-
+    function (text) { return text.split('\n').filter(function (n) { return n; }).join('\n'); },
     // Newl and Space
-    text => {
-        let arr = text.split('\n');
-
+    function (text) {
+        var arr = text.split('\n');
         if (arr.includes('newl')) {
             text = 'var newl\nadd newl 10\n' + text;
         }
@@ -42,92 +48,80 @@ var preprocessor = [
         return text;
     }
 ];
-
 var postprocessor = [
     // \n every 50 characters
-    text => {
-        let postprocessed = '';
-
-        for (let i = 0; i < text.length; i++) {
+    function (text) {
+        var postprocessed = '';
+        for (var i = 0; i < text.length; i++) {
             postprocessed += text[i];
             if ((i + 1) % 100 == 0) {
                 postprocessed += '\n';
             }
         }
-
         return postprocessed;
     },
-]
-
-class Scope {
-    constructor(type, variable) {
+];
+var Scope = /** @class */ (function () {
+    function Scope(type, variable) {
         this.type = type;
         this.variables = [];
         this.variable = variable;
     }
-}
-
-var testArgs = (name, args, len) => {
+    return Scope;
+}());
+var testArgs = function (name, args, len) {
     if (args.length != len) {
-        $('#output').val(`Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
+        $('#output').val("Error: " + name + " accepts " + len + " arguments but " + args.length + " were given.");
         throw new Error("Code error");
     }
 };
-var testMoreArgs = (name, args, len) => {
+var testMoreArgs = function (name, args, len) {
     if (args.length < len) {
-        $('#output').val(`Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
+        $('#output').val("Error: " + name + " accepts " + len + " or more arguments but " + args.length + " were given.");
         throw new Error("Code error");
     }
 };
-
-var varExists = varname => {
+var varExists = function (varname) {
     if (!variables.has(varname)) {
-        $('#output').val(`Error: Variable ${varname} does not exist.`)
+        $('#output').val("Error: Variable " + varname + " does not exist.");
         throw new Error("Code error");
     }
 };
-
-var bestMultiplication = n => {
-    n = parseInt(n);
-
-    let facs = [];
-    let currentbest = [0, 0];
-    let bestsum = 9999;
-    for (let i = -5; i < 6; i++) {
-        for (let j = 1; j < n + i + 1; j++) {
+var bestMultiplication = function (n) {
+    var facs = [];
+    var currentbest = [0, 0];
+    var bestsum = 9999;
+    for (var i = -5; i < 6; i++) {
+        for (var j = 1; j < n + i + 1; j++) {
             if ((n + i) % j == 0) {
-                facs.push([j, parseInt((n + i) / j)]);
+                facs.push([j, Math.floor((n + i) / j)]);
                 if (j + (n + i) / j + Math.abs(i) < bestsum) {
                     bestsum = j + (n + 1) / j + Math.abs(i);
-                    currentbest = [j, parseInt((n + i) / j)];
+                    currentbest = [j, Math.floor((n + i) / j)];
                 }
             }
         }
     }
-
-    return currentbest
-}
-
-var move = varname => {
-	let dif = variables.get(varname) - position;
-
-	for (let i = 0; i < Math.abs(dif); i++) {
-		if (dif < 0) {
-			result += '<';
+    return currentbest;
+};
+var move = function (varname) {
+    var dif = variables.get(varname) - position;
+    for (var i = 0; i < Math.abs(dif); i++) {
+        if (dif < 0) {
+            result += '<';
         }
-		else if (dif > 0) {
-			result += '>';
+        else if (dif > 0) {
+            result += '>';
         }
     }
     position += dif;
-}
-
+};
 var functions = {
-    createVariable(args) {
-        testArgs('var', args, 1)
+    createVariable: function (args) {
+        testArgs('var', args, 1);
         if (!variables.has(args[0])) {
-            nextSpace = 0;
-            for (let i = 0; true; i++) {
+            var nextSpace = 0;
+            for (var i = 0; true; i++) {
                 if (!usedmemory.includes(i)) {
                     nextSpace = i;
                     break;
@@ -138,15 +132,14 @@ var functions = {
             scopes[scopes.length - 1].variables.push(nextSpace);
         }
     },
-    add(args) {
-        let num = parseInt(args[1]);
-
+    add: function (args) {
+        var num = parseInt(args[1]);
         testArgs('add', args, 2);
         varExists(args[0]);
-        let fac = bestMultiplication(Math.abs(num));
+        var fac = bestMultiplication(Math.abs(num));
         if (fac[0] + fac[1] + 5 > Math.abs(num)) {
             move(args[0]);
-            for (let i = 0; i < Math.abs(num); i++) {
+            for (var i = 0; i < Math.abs(num); i++) {
                 if (num > 0) {
                     result += '+';
                 }
@@ -157,12 +150,12 @@ var functions = {
         }
         else {
             move('temp');
-            for (let i = 0; i < parseInt(fac[0]); i++) {
+            for (var i = 0; i < Math.floor(fac[0]); i++) {
                 result += '+';
             }
             result += '[';
             move(args[0]);
-            for (let i = 0; i < parseInt(fac[1]); i++) {
+            for (var i = 0; i < Math.floor(fac[1]); i++) {
                 if (num > 0) {
                     result += '+';
                 }
@@ -172,35 +165,35 @@ var functions = {
             }
             move('temp');
             result += '-]';
-            let mo = 1
+            var mo = 1;
             if (num < 0) {
-                mo *= -1
+                mo *= -1;
             }
             move(args[0]);
-            let dif = num - parseInt(fac[0]) * parseInt(fac[1] * mo)
-            for (let i = 0; i < Math.abs(parseInt(dif)); i++) {
-                if (parseInt(dif) > 0) {
+            var dif = num - Math.floor(fac[0]) * Math.floor(fac[1] * mo);
+            for (var i = 0; i < Math.abs(Math.floor(dif)); i++) {
+                if (Math.floor(dif) > 0) {
                     result += '+';
                 }
-                if (parseInt(dif) < 0) {
+                if (Math.floor(dif) < 0) {
                     result += '-';
                 }
             }
         }
     },
-    clear(args) {
+    clear: function (args) {
         testArgs('clear', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += '[-]';
     },
-    set(args) {
+    set: function (args) {
         testArgs('set', args, 2);
         varExists(args[0]);
         functions.clear([args[0]]);
         functions.add([args[0], args[1]]);
     },
-    move(args) {
+    move: function (args) {
         testArgs('move', args, 2);
         varExists(args[0]);
         varExists(args[1]);
@@ -209,28 +202,26 @@ var functions = {
         move(args[1]);
         result += '+';
         move(args[0]);
-        result += ']'
+        result += ']';
     },
-    copy(args) {
+    copy: function (args) {
         testMoreArgs('copy', args, 2);
-
-        let copyTo = args.slice(1);
-        let copies = copyTo.length;
-
-        for (let i = 0; i < copies; i++) {
+        var copyTo = args.slice(1);
+        var copies = copyTo.length;
+        for (var i = 0; i < copies; i++) {
             varExists(copyTo[i]);
         }
         functions.move([args[0], 'temp']);
         move('temp');
         result += '[-';
-        for (let i = 0; i < args.length; i++) {
+        for (var i = 0; i < args.length; i++) {
             move(args[i]);
             result += '+';
         }
         move('temp');
         result += ']';
     },
-    multiply(args) {
+    multiply: function (args) {
         testArgs('multiply', args, 2);
         varExists(args[0]);
         functions.move([args[0], 'temp']);
@@ -241,106 +232,108 @@ var functions = {
         move('temp');
         result += ']';
     },
-    pause(args) {
+    pause: function (args) {
         testArgs('pause', args, 0);
         move('temp');
         result += '[]-[]';
     },
-    while(args) {
+    "while": function (args) {
         testArgs('#while', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += '[';
         scopes.push(new Scope('while', args[0]));
     },
-    end(args) {
+    end: function (args) {
+        var e_1, _a;
         testArgs('end', args, 0);
-        let popped = scopes.pop();
-        
-        // variables[args[0]] = nextSpace;
-        for (let k of variables.keys()) {
-            if (popped.variables.includes(variables.get(k))) {
-                variables.delete(k);
+        var popped = scopes.pop();
+        try {
+            // variables[args[0]] = nextSpace;
+            for (var _b = __values(variables.keys()), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var k = _c.value;
+                if (popped.variables.includes(variables.get(k))) {
+                    variables["delete"](k);
+                }
             }
         }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
         // usedmemory.push(nextSpace);
-        usedmemory = usedmemory.filter(e => !popped.variables.includes(e));
-
+        usedmemory = usedmemory.filter(function (e) { return !popped.variables.includes(e); });
         if (popped.type == 'while') {
             move(popped.variable);
             result += ']';
         }
     },
-    scope(args) {
+    scope: function (args) {
         testArgs('#scope', args, 0);
-        scopes.push(new Scope('scope'));
+        scopes.push(new Scope('scope', 0));
     },
-    input(args) {
+    input: function (args) {
         testArgs('input', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += ',';
     },
-    print(args) {
+    print: function (args) {
         testArgs('print', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += '.';
     },
-    printletter(args) {
+    printletter: function (args) {
         testArgs('printletter', args, 1);
         functions.set(['temp2', args[0].charCodeAt(0)]);
         move('temp2');
         result += '.';
         functions.clear(['temp2']);
     },
-    addletter(args) {
+    addletter: function (args) {
         testArgs('addletter', args, 2);
         varExists(args[0]);
-
         functions.add([args[0], args[1].charCodeAt(0)]);
     },
-    setletter(args) {
+    setletter: function (args) {
         testArgs('setletter', args, 2);
         varExists(args[0]);
-
         functions.set([args[0], args[1].charCodeAt(0)]);
     },
-    if(args) {
+    "if": function (args) {
         testArgs('#if', args, 3);
         varExists(args[0]);
         functions.createVariable(['temp3']);
-    
         if (args[1] == 'var') {
             varExists(args[2]);
-
             // functions.copy([args[0], 'temp']);
             // functions.copy([args[2], 'temp3']);
-            functions.move([args[0], 'temp2'])
-            functions.while(['temp2']);
+            functions.move([args[0], 'temp2']);
+            functions["while"](['temp2']);
             functions.add([args[0], 1]);
             functions.add(['temp', 1]);
             functions.add(['temp2', -1]);
             functions.end([]);
-            functions.move([args[2], 'temp2'])
-            functions.while(['temp2']);
+            functions.move([args[2], 'temp2']);
+            functions["while"](['temp2']);
             functions.add([args[2], 1]);
             functions.add(['temp3', 1]);
             functions.add(['temp2', -1]);
             functions.end([]);
-
-            functions.while(['temp']);
+            functions["while"](['temp']);
             functions.add(['temp', -1]);
             functions.add(['temp3', -1]);
             functions.end([]);
-            
             functions.add(['temp2', 1]);
-            functions.while(['temp3']);
+            functions["while"](['temp3']);
             functions.clear(['temp3']);
             functions.add(['temp2', -1]);
             functions.end([]);
-
-            functions.while(['temp2']);
+            functions["while"](['temp2']);
             functions.clear(['temp2']);
         }
         else if (args[1] == 'num' || args[1] == 'letter') {
@@ -348,134 +341,119 @@ var functions = {
                 args[1] = args[1].charCodeAt(0);
             }
             functions.copy([args[0], 'temp3']);
-
             functions.add(['temp2', args[2]]);
-            functions.while(['temp3']);
+            functions["while"](['temp3']);
             functions.add(['temp3', -1]);
             functions.add(['temp2', -1]);
             functions.end([]);
-
-            functions.move(['temp2', 'temp'])
-            functions.while(['temp']);
+            functions.move(['temp2', 'temp']);
+            functions["while"](['temp']);
             functions.clear(['temp']);
             functions.add(['temp2', 1]);
             functions.end([]);
-
             functions.add(['temp2', -1]);
-            functions.while(['temp2']);
+            functions["while"](['temp2']);
             functions.clear(['temp2']);
         }
     },
-    ifn(args) {
+    ifn: function (args) {
         testArgs('#ifn', args, 3);
-        
-        functions.if(args);
-        functions.else([]);
+        functions["if"](args);
+        functions["else"]([]);
     },
-    else(args) {
+    "else": function (args) {
         functions.set(['temp', -1]);
         functions.end([]);
         functions.add(['temp', 1]);
-        functions.while(['temp']);
+        functions["while"](['temp']);
         functions.clear(['temp']);
     },
-    printstr(args) {
+    printstr: function (args) {
         testMoreArgs('printstr', args, 1);
-
-        let value = 0;
-        let combinedStrings = args.join(' ');
-        for (let i = 0; i < combinedStrings.length; i++) {
+        var value = 0;
+        var combinedStrings = args.join(' ');
+        for (var i = 0; i < combinedStrings.length; i++) {
             functions.add(['temp2', combinedStrings.charCodeAt(i) - value]);
             value = combinedStrings.charCodeAt(i);
             functions.print(['temp2']);
         }
         functions.clear(['temp2']);
     },
-    printl(args) {
+    printl: function (args) {
         testMoreArgs('printstr', args, 1);
-
-        let value = 0;
-        let combinedStrings = args.join(' ');
-        for (let i = 0; i < combinedStrings.length; i++) {
+        var value = 0;
+        var combinedStrings = args.join(' ');
+        for (var i = 0; i < combinedStrings.length; i++) {
             functions.add(['temp2', combinedStrings.charCodeAt(i) - value]);
             value = combinedStrings.charCodeAt(i);
             functions.print(['temp2']);
         }
-
         functions.add(['temp2', 10 - value]);
         functions.print(['temp2']);
-
         functions.clear(['temp2']);
     },
-    iftrue(args) {
+    iftrue: function (args) {
         testArgs('#iftrue', args, 1);
         varExists(args[0]);
-
         functions.copy([args[0], 'temp2']);
-        functions.while(['temp2']);
+        functions["while"](['temp2']);
         functions.clear(['temp2']);
     },
-    iffalse(args) {
+    iffalse: function (args) {
         testArgs('#iffalse', args, 1);
         varExists(args[0]);
-
         functions.iftrue([args[0]]);
         functions.add(['temp', 1]);
         functions.end([]);
         functions.add(['temp', -1]);
-        functions.while(['temp']);
+        functions["while"](['temp']);
         functions.clear(['temp']);
     },
-    imove(args) {
+    imove: function (args) {
         testArgs('imove', args, 2);
         varExists(args[0]);
         varExists(args[1]);
-
-        functions.while([args[0]]);
+        functions["while"]([args[0]]);
         functions.add([args[0], -1]);
         functions.add([args[1], -1]);
         functions.end([]);
     },
-    divnum(args) {
+    divnum: function (args) {
         testArgs('div', args, 3);
         varExists(args[0]);
         varExists(args[2]);
         functions.createVariable(['temp4']);
-        let num = parseInt(args[1]);
-
+        var num = parseInt(args[1]);
         functions.move([args[0], 'temp4']);
-        functions.while(['temp4']);
+        functions["while"](['temp4']);
         functions.add(['temp4', -1]);
         functions.add([args[2], 1]);
-        functions.if([args[2], 'num', num]);
+        functions["if"]([args[2], 'num', num]);
         functions.clear([args[2]]);
         functions.add([args[0], 1]);
         functions.end([]);
         functions.end([]);
     },
-    goto(args) {
+    goto: function (args) {
         testArgs('move', args, 1);
         varExists(args[0]);
         move(args[0]);
     },
-    printdec(args) {
+    printdec: function (args) {
         testArgs('printdec', args, 1);
         varExists(args[0]);
         functions.createVariable(['temp4']);
         functions.createVariable(['printdec-one']);
         functions.createVariable(['printdec-ten']);
         functions.createVariable(['printdec-hun']);
-
         functions.clear(['printdec-one']);
         functions.clear(['printdec-ten']);
         functions.clear(['printdec-hun']);
-
         functions.copy([args[0], 'printdec-one']);
         functions.divnum(['printdec-one', 10, 'printdec-ten']);
-        functions.switch(['printdec-one', 'printdec-ten']);
+        functions["switch"](['printdec-one', 'printdec-ten']);
         functions.divnum(['printdec-ten', 10, 'printdec-hun']);
-        functions.switch(['printdec-ten', 'printdec-hun']);
-
+        functions["switch"](['printdec-ten', 'printdec-hun']);
         functions.copy(['printdec-hun', 'temp4']);
         functions.iftrue(['temp4']);
         functions.add(['printdec-hun', 48]);
@@ -490,34 +468,29 @@ var functions = {
         functions.add(['printdec-one', 48]);
         functions.print(['printdec-one']);
     },
-    switch(args) {
+    "switch": function (args) {
         testArgs('switch', args, 2);
         varExists(args[0]);
         varExists(args[1]);
-
         functions.move([args[0], 'temp']);
         functions.move([args[1], args[0]]);
         functions.move(['temp', args[1]]);
     },
-    newl(args) {
+    newl: function (args) {
         testArgs('newl', args, 0);
-
         functions.print(['newl']);
     },
-    space(args) {
+    space: function (args) {
         testArgs('space', args, 0);
-
         functions.print(['space']);
     },
-    for(args) {
+    "for": function (args) {
         testArgs('#for', args, 1);
         varExists(args[0]);
-
-        functions.while([args[0]]);
+        functions["while"]([args[0]]);
         functions.add([args[0], -1]);
-    },
+    }
 };
-
 var commands = {
     "var": functions.createVariable,
     "add": functions.add,
@@ -530,8 +503,8 @@ var commands = {
     "copy": functions.copy,
     "multiply": functions.multiply,
     "#pause": functions.pause,
-    "#for": functions.for,
-    "#while": functions.while,
+    "#for": functions["for"],
+    "#while": functions["while"],
     "#end": functions.end,
     "#scope": functions.scope,
     "input": functions.input,
@@ -540,51 +513,46 @@ var commands = {
     "printstr": functions.printstr,
     "printl": functions.printl,
     "divnum": functions.divnum,
-    "#if": functions.if,
+    "#if": functions["if"],
     "#iftrue": functions.iftrue,
     "#iffalse": functions.iffalse,
-    "#else": functions.else,
+    "#else": functions["else"],
     "goto": functions.goto,
     "printdec": functions.printdec,
-    "switch": functions.switch,
+    "switch": functions["switch"],
     "newl": functions.newl,
-    "space": functions.space,
+    "space": functions.space
 };
-
-$('#build').click(() => {
+$('#build').click(function () {
     variables = new Map();
     variables.set('temp2', 0);
     variables.set('temp', 1);
     usedmemory = [0, 1];
     position = 0;
     result = '';
-    scopes = [new Scope('scope')];
-
-    let text = $('#input').val();
-    for (let i = 0; i < preprocessor.length; i++) {
+    scopes = [new Scope('scope', 0)];
+    var text = $('#input').val();
+    for (var i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
     }
-
-    args = text.split('\n');
-    for (let i = 0; i < args.length; i++) {
-        args[i] = args[i].split(' ');
-        if (commands.hasOwnProperty(args[i][0])) {
-            commands[args[i][0]](args[i].slice(1));
+    var args = text.split('\n');
+    var argsSplit = Array(args.length).fill(null);
+    for (var i = 0; i < args.length; i++) {
+        argsSplit[i] = args[i].split(' ');
+        if (commands.hasOwnProperty(argsSplit[i][0])) {
+            commands[argsSplit[i][0]](argsSplit[i].slice(1));
         }
         else {
-            $('#output').val(`Error: Command ${args[i][0]} does not exist.`);
+            $('#output').val("Error: Command " + argsSplit[i][0] + " does not exist.");
             throw new Error("Error");
         }
     }
-
-    for (let i = 0; i < postprocessor.length; i++) {
+    for (var i = 0; i < postprocessor.length; i++) {
         result = postprocessor[i](result);
     }
-    
     $('#output').val(result);
     console.log(variables);
 });
-
 // Localstorage
 if (localStorage.getItem('bfc-text') === null) {
     localStorage.setItem('bfc-text', '');
@@ -592,12 +560,10 @@ if (localStorage.getItem('bfc-text') === null) {
 else {
     $('#input').val(localStorage.getItem('bfc-text'));
 }
-
-$('#input').on('input', () => {
+$('#input').on('input', function () {
     localStorage.setItem('bfc-text', $('#input').val());
 });
-
-$('#rmLocalStorage').click(() => {
+$('#rmLocalStorage').click(function () {
     $('#input').val('');
     $('#output').val('');
     localStorage.setItem('bfc-text', '');
