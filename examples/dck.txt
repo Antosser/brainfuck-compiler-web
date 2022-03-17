@@ -3,10 +3,6 @@ var o
 addletter o O
 var i
 
-// Defenitions
-def space
-def newl
-
 // Code
 space
 space
@@ -65,7 +61,7 @@ print o
 space
 space
 newl
-#endwhile
+#end
 
 space
 print o

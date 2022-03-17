@@ -1,0 +1,88 @@
+var a
+var b
+
+printl Antosser's Brainfuck compiler
+printl For help input e or h
+printl ----------
+
+#scope
+    var input
+    var ok
+
+    set ok 1
+
+    #while ok
+        input input
+
+        var help
+        set help 0
+        var isnumber
+        set isnumber 0
+
+        var foundop
+        set foundop 0
+
+        #scope
+            
+        #end
+
+        #if input letter e
+            set foundop 1
+            set help 1
+        #end
+        #iffalse foundop
+        #if input letter h
+            set foundop 1
+            set help 1
+        #end
+        #end
+        #iffalse foundop
+        #if input letter +
+            set foundop 1
+            
+
+        #end
+        #end
+        #iffalse foundop
+        #if input letter =
+            set foundop 1
+            
+
+        #end
+        #end
+        #iffalse foundop
+        #if input letter -
+            set foundop 1
+            
+
+        #end
+        #end
+        #iffalse foundop
+        #if input letter *
+            set foundop 1
+            
+
+        #end
+        #end
+        #iffalse foundop
+        #if input letter /
+            set foundop 1
+            
+
+        #end
+        #end
+
+        #iffalse foundop
+            set help 1
+        #end
+
+        #iftrue help
+            printl Repository: https://github.com/Antosser/brainfuck-compiler-web
+            printl Email: antosser@antosser.xyz
+            printl ----------
+            printl Syntax: <number1><opation><number2>=
+            printl Operations: + - * /
+            printl Example: 69/7=
+        #end
+    #dnd
+#end

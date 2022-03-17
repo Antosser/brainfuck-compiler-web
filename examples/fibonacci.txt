@@ -1,36 +1,17 @@
 var a
 var b
-add b 1
 var c
-
-var one
-var ten
-var hun
 var i
 
-def newl
+set b 1
+set i 13
 
-add i 14
-#while i
-  todec a one ten hun
-  tostr one
-  #ifn0 hun
-    tostr hun
-    print hun
-  #endif
-  #ifn0 ten
-    tostr ten
-    print ten
-  #endif
-  print one
-  clear one
-  clear ten
-  clear hun
+#for i
+  printdec a
   newl
 
   move a c
   move b a
+  copy a c
   move c b
-  copy a b
-add i -1
-#endwhile
+#end
