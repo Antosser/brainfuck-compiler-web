@@ -32,3 +32,9 @@ textarea {
 #rmLocalStorage {
     display: none;
 }
+
+.githublink {
+    font-size: smaller;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    display: inline-block;
+}
