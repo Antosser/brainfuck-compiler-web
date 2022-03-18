@@ -45,3 +45,10 @@ The code uses an assembly-like syntax so don't put any ; and the end of each lin
 - **#pause** - Pause code
 - **#iftrue** {variable} - Execute code if variable is non zero
 - **#iffalse** {variable} - Execute code if variable is zero
+
+#### Enums
+- **enumtype** {typename} {value1} {value2} ... - Creates enum type
+- **createenum** {varname} {enumtype} - Create enum variable storing a value
+- **setenum** {enum} {value} - Set value of enum to value
+- **#ifenum** {enum} {value} - Same as #if but with enums
+- **#ifnenum** {enum} {value} - Opposite of #ifenum
