@@ -5,7 +5,7 @@ Brainfuck was designed to be the hardest programming language ever but I made a 
 1. Go to [this link](https://antosser.github.io/brainfuck-compiler-web/)
 2. Enter your code in the textarea below "Input"
 3. Click the "Build" button
-4. Copy the code from the textarea below "Ouput" and paste it into wherever you interpret brainfuck
+4. Copy the code from the textarea below "Ouput" and paste it into your brainfuck interpreter
 
 ## Features
 - Your code uses scopes. If a variable goes out of scope it's memory will be cleared
