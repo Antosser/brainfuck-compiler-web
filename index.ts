@@ -577,7 +577,7 @@ var functions = {
             throw new Error('Error');
         }
 
-        functions.if([args[0], 'var', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
+        functions.if([args[0], 'num', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
     },
     ifnenum(args: any[]) {
         testMoreArgs('#ifenum', args, 2);

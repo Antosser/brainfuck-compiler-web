@@ -540,7 +540,7 @@ var __values = (this && this.__values) || function(o) {
                 $('#output').val("Enum type " + enums.get(args[0]) + " does not have a property: " + args[1]);
                 throw new Error('Error');
             }
-            functions["if"]([args[0], 'var', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
+            functions["if"]([args[0], 'num', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
         },
         ifnenum: function (args) {
             testMoreArgs('#ifenum', args, 2);
