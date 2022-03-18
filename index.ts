@@ -621,6 +621,7 @@ var commands = {
     "enumtype": functions.enumtype,
     "createenum": functions.createenum,
     "setenum": functions.setenum,
+    "#ifenum": functions.ifenum,
     "#ifnenum": functions.ifnenum,
 };
 

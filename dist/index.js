@@ -582,6 +582,7 @@ var __values = (this && this.__values) || function(o) {
         "enumtype": functions.enumtype,
         "createenum": functions.createenum,
         "setenum": functions.setenum,
+        "#ifenum": functions.ifenum,
         "#ifnenum": functions.ifnenum
     };
     $('#build').click(function () {
