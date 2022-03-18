@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "ES3",
+        "lib": [
+            "DOM"
+        ],
+        "downlevelIteration": true
+    },
+    "files": [
+        "index.ts"
+    ]
+}
