@@ -615,7 +615,6 @@ var __values = (this && this.__values) || function(o) {
             result = postprocessor[i](result);
         }
         $('#output').val(result);
-        console.log(variables);
     });
     // Localstorage
     if (localStorage.getItem('bfc-text') === null) {

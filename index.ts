@@ -659,7 +659,6 @@ $('#build').click(() => {
     }
     
     $('#output').val(result);
-    console.log(variables);
 });
 
 // Localstorage
