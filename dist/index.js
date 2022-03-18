@@ -581,7 +581,8 @@ var __values = (this && this.__values) || function(o) {
         "space": functions.space,
         "enumtype": functions.enumtype,
         "createenum": functions.createenum,
-        "setenum": functions.setenum
+        "setenum": functions.setenum,
+        "#ifnenum": functions.ifnenum
     };
     $('#build').click(function () {
         variables = new Map();
