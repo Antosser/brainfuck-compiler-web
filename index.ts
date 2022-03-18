@@ -1,8 +1,11 @@
+(function(){
 var variables: Map<string, number>;
 var usedmemory: number[];
 var position: number;
 var result: string;
 var scopes: Scope[];
+var enumtypes: Map<string, BfEnum>;
+var enums: Map<string, string>;
 
 var preprocessor: ((data: string) => string)[] = [
     // Trim each line
@@ -43,7 +46,7 @@ var preprocessor: ((data: string) => string)[] = [
     }
 ];
 
-var postprocessor = [
+var postprocessor: ((data: string) => string)[] = [
     // \n every 50 characters
     text => {
         let postprocessed = '';
@@ -57,41 +60,56 @@ var postprocessor = [
 
         return postprocessed;
     },
-]
+];
 
 class Scope {
     type: string;
     variables: number[];
-    variable: number | null;
+    variable: string | null;
 
-    constructor(type: string, variable: number) {
+    constructor(type: string, variable?: string) {
         this.type = type;
         this.variables = [];
         this.variable = variable;
     }
 }
 
-var testArgs = (name, args, len) => {
+class BfEnum {
+    assignments: Map<string, number>;
+
+    constructor(assignments: string[]) {
+        this.assignments = new Map();
+
+        let nextfree = 1;
+
+        assignments.forEach(element => {
+            this.assignments.set(element, nextfree);
+            nextfree++;
+        });
+    }
+}
+
+function testArgs(name: string, args: string[], len: number) {
     if (args.length != len) {
         $('#output').val(`Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
-};
-var testMoreArgs = (name, args, len) => {
+}
+function testMoreArgs(name: string, args: string[], len: number) {
     if (args.length < len) {
         $('#output').val(`Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
-};
+}
 
-var varExists = varname => {
+function varExists(varname: string) {
     if (!variables.has(varname)) {
         $('#output').val(`Error: Variable ${varname} does not exist.`)
         throw new Error("Code error");
     }
-};
+}
 
-var bestMultiplication = (n: number) => {
+function bestMultiplication(n: number) {
     let facs: number[][] = [];
     let currentbest = [0, 0];
     let bestsum = 9999;
@@ -110,7 +128,7 @@ var bestMultiplication = (n: number) => {
     return currentbest
 }
 
-var move = varname => {
+function move(varname: string) {
 	let dif = variables.get(varname) - position;
 
 	for (let i = 0; i < Math.abs(dif); i++) {
@@ -125,7 +143,7 @@ var move = varname => {
 }
 
 var functions = {
-    createVariable(args) {
+    createVariable(args: any[]) {
         testArgs('var', args, 1)
         if (!variables.has(args[0])) {
             let nextSpace = 0;
@@ -140,7 +158,7 @@ var functions = {
             scopes[scopes.length - 1].variables.push(nextSpace);
         }
     },
-    add(args) {
+    add(args: any[]) {
         let num = parseInt(args[1]);
 
         testArgs('add', args, 2);
@@ -190,19 +208,19 @@ var functions = {
             }
         }
     },
-    clear(args) {
+    clear(args: any[]) {
         testArgs('clear', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += '[-]';
     },
-    set(args) {
+    set(args: any[]) {
         testArgs('set', args, 2);
         varExists(args[0]);
         functions.clear([args[0]]);
         functions.add([args[0], args[1]]);
     },
-    move(args) {
+    move(args: any[]) {
         testArgs('move', args, 2);
         varExists(args[0]);
         varExists(args[1]);
@@ -213,7 +231,7 @@ var functions = {
         move(args[0]);
         result += ']'
     },
-    copy(args) {
+    copy(args: any[]) {
         testMoreArgs('copy', args, 2);
 
         let copyTo = args.slice(1);
@@ -232,7 +250,7 @@ var functions = {
         move('temp');
         result += ']';
     },
-    multiply(args) {
+    multiply(args: any[]) {
         testArgs('multiply', args, 2);
         varExists(args[0]);
         functions.move([args[0], 'temp']);
@@ -243,7 +261,7 @@ var functions = {
         move('temp');
         result += ']';
     },
-    pause(args) {
+    pause(args: any[]) {
         testArgs('pause', args, 0);
         move('temp');
         result += '[]-[]';
@@ -255,7 +273,7 @@ var functions = {
         result += '[';
         scopes.push(new Scope('while', args[0]));
     },
-    end(args) {
+    end(args: any[]) {
         testArgs('end', args, 0);
         let popped = scopes.pop();
         
@@ -273,42 +291,42 @@ var functions = {
             result += ']';
         }
     },
-    scope(args) {
+    scope(args: any[]) {
         testArgs('#scope', args, 0);
-        scopes.push(new Scope('scope', 0));
+        scopes.push(new Scope('scope'));
     },
-    input(args) {
+    input(args: any[]) {
         testArgs('input', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += ',';
     },
-    print(args) {
+    print(args: any[]) {
         testArgs('print', args, 1);
         varExists(args[0]);
         move(args[0]);
         result += '.';
     },
-    printletter(args) {
+    printletter(args: any[]) {
         testArgs('printletter', args, 1);
         functions.set(['temp2', args[0].charCodeAt(0)]);
         move('temp2');
         result += '.';
         functions.clear(['temp2']);
     },
-    addletter(args) {
+    addletter(args: any[]) {
         testArgs('addletter', args, 2);
         varExists(args[0]);
 
         functions.add([args[0], args[1].charCodeAt(0)]);
     },
-    setletter(args) {
+    setletter(args: any[]) {
         testArgs('setletter', args, 2);
         varExists(args[0]);
 
         functions.set([args[0], args[1].charCodeAt(0)]);
     },
-    if(args) {
+    if(args: any[]) {
         testArgs('#if', args, 3);
         varExists(args[0]);
         functions.createVariable(['temp3']);
@@ -368,20 +386,20 @@ var functions = {
             functions.clear(['temp2']);
         }
     },
-    ifn(args) {
+    ifn(args: any[]) {
         testArgs('#ifn', args, 3);
         
         functions.if(args);
         functions.else([]);
     },
-    else(args) {
+    else(args: any[]) {
         functions.set(['temp', -1]);
         functions.end([]);
         functions.add(['temp', 1]);
         functions.while(['temp']);
         functions.clear(['temp']);
     },
-    printstr(args) {
+    printstr(args: any[]) {
         testMoreArgs('printstr', args, 1);
 
         let value = 0;
@@ -393,7 +411,7 @@ var functions = {
         }
         functions.clear(['temp2']);
     },
-    printl(args) {
+    printl(args: any[]) {
         testMoreArgs('printstr', args, 1);
 
         let value = 0;
@@ -409,7 +427,7 @@ var functions = {
 
         functions.clear(['temp2']);
     },
-    iftrue(args) {
+    iftrue(args: any[]) {
         testArgs('#iftrue', args, 1);
         varExists(args[0]);
 
@@ -417,7 +435,7 @@ var functions = {
         functions.while(['temp2']);
         functions.clear(['temp2']);
     },
-    iffalse(args) {
+    iffalse(args: any[]) {
         testArgs('#iffalse', args, 1);
         varExists(args[0]);
 
@@ -428,7 +446,7 @@ var functions = {
         functions.while(['temp']);
         functions.clear(['temp']);
     },
-    imove(args) {
+    imove(args: any[]) {
         testArgs('imove', args, 2);
         varExists(args[0]);
         varExists(args[1]);
@@ -438,7 +456,7 @@ var functions = {
         functions.add([args[1], -1]);
         functions.end([]);
     },
-    divnum(args) {
+    divnum(args: any[]) {
         testArgs('div', args, 3);
         varExists(args[0]);
         varExists(args[2]);
@@ -455,12 +473,12 @@ var functions = {
         functions.end([]);
         functions.end([]);
     },
-    goto(args) {
+    goto(args: any[]) {
         testArgs('move', args, 1);
         varExists(args[0]);
         move(args[0]);
     },
-    printdec(args) {
+    printdec(args: any[]) {
         testArgs('printdec', args, 1);
         varExists(args[0]);
         functions.createVariable(['temp4']);
@@ -492,7 +510,7 @@ var functions = {
         functions.add(['printdec-one', 48]);
         functions.print(['printdec-one']);
     },
-    switch(args) {
+    switch(args: any[]) {
         testArgs('switch', args, 2);
         varExists(args[0]);
         varExists(args[1]);
@@ -501,22 +519,71 @@ var functions = {
         functions.move([args[1], args[0]]);
         functions.move(['temp', args[1]]);
     },
-    newl(args) {
+    newl(args: any[]) {
         testArgs('newl', args, 0);
 
         functions.print(['newl']);
     },
-    space(args) {
+    space(args: any[]) {
         testArgs('space', args, 0);
 
         functions.print(['space']);
     },
-    for(args) {
+    for(args: any[]) {
         testArgs('#for', args, 1);
         varExists(args[0]);
 
         functions.while([args[0]]);
         functions.add([args[0], -1]);
+    },
+    enumtype(args: any[]) {
+        testMoreArgs('enumtype', args, 2);
+
+        enumtypes.set(args[0], new BfEnum(args.splice(1)));
+    },
+    createenum(args: any[]) {
+        testArgs('createeum', args, 2);
+        
+        if (!enumtypes.has(args[1])) {
+            $('#output').val(`No enum type ${args[1]} exists`);
+            throw new Error('Error');
+        }
+        enums.set(args[0], args[1]);
+        functions.createVariable([args[0]]);
+    },
+    setenum(args: any[]) {
+        testMoreArgs('setenum', args, 2);
+
+        if (!enums.has(args[0])) {
+            $('#output').val(`No enum ${args[0]} exists`);
+            throw new Error('Error');
+        }
+        if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
+            $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
+            throw new Error('Error');
+        }
+
+        functions.set([args[0], enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
+    },
+    ifenum(args: any[]) {
+        testMoreArgs('#ifenum', args, 2);
+
+        if (!enums.has(args[0])) {
+            $('#output').val(`No enum ${args[0]} exists`);
+            throw new Error('Error');
+        }
+        if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
+            $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
+            throw new Error('Error');
+        }
+
+        functions.if([args[0], 'var', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
+    },
+    ifnenum(args: any[]) {
+        testMoreArgs('#ifenum', args, 2);
+
+        functions.ifenum(args);
+        functions.else([]);
     },
 };
 
@@ -551,6 +618,9 @@ var commands = {
     "switch": functions.switch,
     "newl": functions.newl,
     "space": functions.space,
+    "enumtype": functions.enumtype,
+    "createenum": functions.createenum,
+    "setenum": functions.setenum,
 };
 
 $('#build').click(() => {
@@ -560,7 +630,9 @@ $('#build').click(() => {
     usedmemory = [0, 1];
     position = 0;
     result = '';
-    scopes = [new Scope('scope', 0)];
+    scopes = [new Scope('scope')];
+    enumtypes = new Map();
+    enums = new Map();
 
     let text: string = <string>$('#input').val();
     for (let i = 0; i < preprocessor.length; i++) {
@@ -605,3 +677,4 @@ $('#rmLocalStorage').click(() => {
     $('#output').val('');
     localStorage.setItem('bfc-text', '');
 });
+})();
