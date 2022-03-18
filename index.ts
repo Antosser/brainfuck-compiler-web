@@ -546,7 +546,7 @@ var functions = {
         
         if (!enumtypes.has(args[1])) {
             $('#output').val(`No enum type ${args[1]} exists`);
-            throw new Error('Error');
+            throw new Error('Code error');
         }
         enums.set(args[0], args[1]);
         functions.createVariable([args[0]]);
@@ -556,11 +556,11 @@ var functions = {
 
         if (!enums.has(args[0])) {
             $('#output').val(`No enum ${args[0]} exists`);
-            throw new Error('Error');
+            throw new Error('Code error');
         }
         if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
             $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
-            throw new Error('Error');
+            throw new Error('Code error');
         }
 
         functions.set([args[0], enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
@@ -570,11 +570,11 @@ var functions = {
 
         if (!enums.has(args[0])) {
             $('#output').val(`No enum ${args[0]} exists`);
-            throw new Error('Error');
+            throw new Error('Code error');
         }
         if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
             $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
-            throw new Error('Error');
+            throw new Error('Code error');
         }
 
         functions.if([args[0], 'num', enumtypes.get(enums.get(args[0])).assignments.get(args[1])]);
