@@ -1,35 +1,19 @@
-(function(){
-    // Polyfill
-    if (!String.prototype.startsWith) {
-        Object.defineProperty(String.prototype, 'startsWith', {
-            value: function(search, rawPos) {
-                var pos = rawPos > 0 ? rawPos|0 : 0;
-                return this.substring(pos, pos + search.length) === search;
-            }
-        });
-    }
-    if (!Array.prototype.includes) {  
-        Array.prototype.includes = function (search) {  
-            return !!~this.indexOf(search);  
-        }  
-    }  
-    if (!Array.prototype.indexOf) {  
-        Array.prototype.indexOf = (function (Object, max, min) {  
-            "use strict";  
-            return function indexOf(member, fromIndex) {  
-                if (this === null || this === undefined) throw TypeError("Array.prototype.indexOf called on null or undefined");  
-                var that = Object(this), Len = that.length >>> 0, i = min(fromIndex | 0, Len);  
-                if (i < 0) i = max(0, Len + i); else if (i >= Len) return -1;  
-                if (member === void 0) {  
-                    for (; i !== Len; ++i) if (that[i] === void 0 && i in that) return i;  
-                } else if (member !== member) {  
-                    for (; i !== Len; ++i) if (that[i] !== that[i]) return i;  
-                } else for (; i !== Len; ++i) if (that[i] === member) return i;  
-                return -1;  
-            };  
-        })(Object, Math.max, Math.min);  
-    }  
+import 'core-js/es6/symbol';
+import 'core-js/es6/object';
+import 'core-js/es6/function';
+import 'core-js/es6/parse-int';
+import 'core-js/es6/parse-float';
+import 'core-js/es6/number';
+import 'core-js/es6/math';
+import 'core-js/es6/string';
+import 'core-js/es6/date';
+import 'core-js/es6/array';
+import 'core-js/es6/regexp';
+import 'core-js/es6/map';
+import 'core-js/es6/weak-map';
+import 'core-js/es6/set';
 
+(function(){
     var variables: Map<string, number>;
     var usedmemory: number[];
     var position: number;

@@ -1,3 +1,4 @@
+"use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -9,50 +10,22 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
+exports.__esModule = true;
+require("core-js/es6/symbol");
+require("core-js/es6/object");
+require("core-js/es6/function");
+require("core-js/es6/parse-int");
+require("core-js/es6/parse-float");
+require("core-js/es6/number");
+require("core-js/es6/math");
+require("core-js/es6/string");
+require("core-js/es6/date");
+require("core-js/es6/array");
+require("core-js/es6/regexp");
+require("core-js/es6/map");
+require("core-js/es6/weak-map");
+require("core-js/es6/set");
 (function () {
-    // Polyfill
-    if (!String.prototype.startsWith) {
-        Object.defineProperty(String.prototype, 'startsWith', {
-            value: function (search, rawPos) {
-                var pos = rawPos > 0 ? rawPos | 0 : 0;
-                return this.substring(pos, pos + search.length) === search;
-            }
-        });
-    }
-    if (!Array.prototype.includes) {
-        Array.prototype.includes = function (search) {
-            return !!~this.indexOf(search);
-        };
-    }
-    if (!Array.prototype.indexOf) {
-        Array.prototype.indexOf = (function (Object, max, min) {
-            "use strict";
-            return function indexOf(member, fromIndex) {
-                if (this === null || this === undefined)
-                    throw TypeError("Array.prototype.indexOf called on null or undefined");
-                var that = Object(this), Len = that.length >>> 0, i = min(fromIndex | 0, Len);
-                if (i < 0)
-                    i = max(0, Len + i);
-                else if (i >= Len)
-                    return -1;
-                if (member === void 0) {
-                    for (; i !== Len; ++i)
-                        if (that[i] === void 0 && i in that)
-                            return i;
-                }
-                else if (member !== member) {
-                    for (; i !== Len; ++i)
-                        if (that[i] !== that[i])
-                            return i;
-                }
-                else
-                    for (; i !== Len; ++i)
-                        if (that[i] === member)
-                            return i;
-                return -1;
-            };
-        })(Object, Math.max, Math.min);
-    }
     var variables;
     var usedmemory;
     var position;
