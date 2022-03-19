@@ -1,4 +1,3 @@
-"use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -10,21 +9,6 @@ var __values = (this && this.__values) || function(o) {
     };
     throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
 };
-exports.__esModule = true;
-require("core-js/es6/symbol");
-require("core-js/es6/object");
-require("core-js/es6/function");
-require("core-js/es6/parse-int");
-require("core-js/es6/parse-float");
-require("core-js/es6/number");
-require("core-js/es6/math");
-require("core-js/es6/string");
-require("core-js/es6/date");
-require("core-js/es6/array");
-require("core-js/es6/regexp");
-require("core-js/es6/map");
-require("core-js/es6/weak-map");
-require("core-js/es6/set");
 (function () {
     var variables;
     var usedmemory;
