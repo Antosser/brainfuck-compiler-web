@@ -601,7 +601,7 @@ var commands = {
     "#ifenum": functions.ifenum,
     "#ifnenum": functions.ifnenum
 };
-$('#build').click(function () {
+$('#build').on('click', function () {
     variables = new Map();
     variables.set('temp2', 0);
     variables.set('temp', 1);

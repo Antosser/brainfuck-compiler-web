@@ -642,7 +642,7 @@ var commands = {
     "#ifnenum": functions.ifnenum,
 };
 
-$('#build').click(() => {
+$('#build').on('click', () => {
     variables = new Map();
     variables.set('temp2', 0);
     variables.set('temp', 1);
