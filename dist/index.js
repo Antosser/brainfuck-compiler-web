@@ -448,6 +448,22 @@ var functions = {
         functions.end([]);
         functions.end([]);
     },
+    divvar: function (args) {
+        testArgs('div', args, 3);
+        varExists(args[0]);
+        varExists(args[1]);
+        varExists(args[2]);
+        functions.createVariable(['temp4']);
+        functions.move([args[0], 'temp4']);
+        functions["while"](['temp4']);
+        functions.add(['temp4', -1]);
+        functions.add([args[2], 1]);
+        functions["if"]([args[2], 'var', args[1]]);
+        functions.clear([args[2]]);
+        functions.add([args[0], 1]);
+        functions.end([]);
+        functions.end([]);
+    },
     goto: function (args) {
         testArgs('move', args, 1);
         varExists(args[0]);
@@ -569,6 +585,7 @@ var commands = {
     "printstr": functions.printstr,
     "printl": functions.printl,
     "divnum": functions.divnum,
+    "divvar": functions.divvar,
     "#if": functions["if"],
     "#iftrue": functions.iftrue,
     "#iffalse": functions.iffalse,
