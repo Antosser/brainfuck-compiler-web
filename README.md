@@ -25,7 +25,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 #### Computation
 - **add** {variable} {number} - Adds number to variable
 - **multiply** {variable} {number} - Multiply variable by number
-- **divnum** {variable} {value} {module-output} - Divides value of variable by {value} and stores result into variable and {value}
+- **divnum** {variable} {value} {module-output} - Divides value of variable by {value} and stores result into {variable} and {module-output}
 
 #### I/O
 - **input** {variable} - Set value of variable to the pressed key
