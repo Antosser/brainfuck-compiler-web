@@ -9,6 +9,7 @@ Brainfuck was designed to be the hardest programming language ever but I made a 
 
 ## Features
 - Your code uses scopes. If a variable goes out of scope it's memory will be cleared
+- Start a line with // to mark it as a comment
 
 ## Code syntax
 The code uses an assembly-like syntax so don't put any ; and the end of any line
@@ -53,3 +54,28 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 - **setenum** {enum} {value} - Set value of enum to value
 - **#ifenum** {enum} {value} - Same as #if but with enums
 - **#ifnenum** {enum} {value} - Opposite of #ifenum
+
+## Example
+```bash
+// Simple comment
+
+// Create variable a and b
+var a
+var b
+
+// Assign 69 to a
+set a 69
+
+// Move a to b (A will be 0, b will be 69)
+move a b
+
+// Switch values of a and b (A will be 69, b will be 0)
+switch a b
+
+// Copy a to b (Now both a and b will be 69)
+copy a b
+
+// Clear / Reset both variables
+clear a
+clear b
+```
