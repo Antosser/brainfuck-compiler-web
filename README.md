@@ -42,6 +42,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 #### Scoping
 - **#if** {variable1} var {variable2} - Execute code if variable1 == variable2
 - **#if** {variable1} num {number} - Execute code if variable1 == number
+- **#if** {variable1} letter {letter} - Execute code if variable1 == ASCII code of letter
 - **#while** {variable} - Execute code code while variable is not 0
 - **#end** - End scope / while / if / ect
 - **#scope** - Open a scope
@@ -135,4 +136,99 @@ Output:
 AHello World!
 Hello World!
 123
+```
+
+### Scoping
+```
+// Create variable a and set it to 12
+var a
+set a 12
+
+// Create variable b and set it to 13
+var b
+set b 13
+
+// Compare a and b
+#if a var b
+  // Print true if a and b are equal
+  printl true
+#else
+  // Print false if a and b are not equal
+  printl false
+#end
+
+// Compare a and 12
+#if a num 12
+  // Print true if a is 12
+  printl true
+#else
+  // Print false if a is not 12
+  printl false
+#end
+
+// Input a character
+var input
+input input
+
+// Check if input is the capital letter A
+#if input letter A
+printl true
+#else
+printl false
+#end
+
+// Create variable i and set it to 10
+var i
+set I 10
+
+// Loop 10 times
+#while i
+  printl lol
+  add i -1
+#end
+
+// Create scope
+#scope
+  var mylocalvariable
+#end
+
+// Set already existing variable a to 0
+clear a
+
+// Check if a is non-zero
+#iftrue a
+  // Won't run
+#end
+
+// Check if a is 0
+#iffalse a
+  // Will run
+#end
+```
+
+### Enums
+```
+// Create enum type imageextensions
+enumtype imageextensions jpg png gif
+
+// Create variable that contains one of: jpg, png, gif
+createenum myextension imageextensions
+
+// Set it to png
+setenum myextension gif
+
+// Check if extension is png
+#ifenum myextension png
+  printl It is png!
+#end
+#ifenum myextension gif
+  printl It is gif!
+#end
+#ifenum myextension jpg
+  printl It is jpg!
+#end
+```
+Output:
+```
+It is gif!
 ```
