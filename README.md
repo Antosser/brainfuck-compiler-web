@@ -57,7 +57,7 @@ Don't put ; at the end of any line.
 - **#ifenum** {enum} {value} - Same as #if but with enums
 - **#ifnenum** {enum} {value} - Opposite of #ifenum
 
-## Example
+## Examples
 ### Assignment
 ```
 // Simple comment
