@@ -56,6 +56,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 - **#ifnenum** {enum} {value} - Opposite of #ifenum
 
 ## Example
+### Assignment
 ```
 // Simple comment
 
@@ -63,7 +64,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 var a
 var b
 
-// Assign 69 to a
+// Sert a to 69
 set a 69
 
 // Move a to b (A will be 0, b will be 69)
@@ -78,4 +79,27 @@ copy a b
 // Clear / Reset both variables
 clear a
 clear b
+```
+
+### Computation
+```
+// Create variable a and set it to 20
+var a
+set a 20
+
+// Add 3 to a (a will be 23)
+add a 3
+
+// Multiply a with 3 (a will be 69)
+multiply a 3
+
+// Now divide a by 3 ( a will be 23 again)
+// First we need to create a variable for the module
+var mo
+divnum a 3 mo
+```
+
+### I/O
+```
+
 ```
