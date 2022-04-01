@@ -127,5 +127,6 @@ endl
 var num
 set num 123
 
+// Print the number
 printdec num
 ```
