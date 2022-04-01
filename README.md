@@ -56,7 +56,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 - **#ifnenum** {enum} {value} - Opposite of #ifenum
 
 ## Example
-```cfg
+```shell
 // Simple comment
 
 // Create variable a and b
