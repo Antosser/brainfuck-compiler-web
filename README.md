@@ -114,10 +114,10 @@ print input
 // Print a capital A
 printletter A
 
-// Print "Hwllo World!" (with line ending)
+// Print "Hello World!" (with line ending)
 printl Hello World!
 
-// Print "Hwllo World!" (without line ending)
+// Print "Hello World!" (without line ending)
 printstr Hello World!
 
 // End the line
