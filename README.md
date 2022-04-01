@@ -121,7 +121,7 @@ printl Hello World!
 printstr Hello World!
 
 // End the line
-endl
+newl
 
 // Create variable num and set it to 123
 var num
