@@ -37,6 +37,7 @@ The code uses an assembly-like syntax so don't put any ; and the end of any line
 - **printl** {string} - Print string ending with \n
 - **printdec** {variable} - Print variable as decimal integer
 - **newl** - End line
+- **space** - Print space
 
 #### Scoping
 - **#if** {variable1} var {variable2} - Execute code if variable1 == variable2
@@ -101,5 +102,30 @@ divnum a 3 mo
 
 ### I/O
 ```
+// Create a variable for input
+var input
 
+// Set input to the ASCII code of the inputted character
+input input
+
+// Print the inputted character
+print input
+
+// Print a capital A
+printletter A
+
+// Print "Hwllo World!" (with line ending)
+printl Hello World!
+
+// Print "Hwllo World!" (without line ending)
+printstr Hello World!
+
+// End the line
+endl
+
+// Create variable num and set it to 123
+var num
+set num 123
+
+printdec num
 ```
