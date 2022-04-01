@@ -130,3 +130,9 @@ set num 123
 // Print the number
 printdec num
 ```
+Output:
+```
+AHello World!
+Hello World!
+123
+```
