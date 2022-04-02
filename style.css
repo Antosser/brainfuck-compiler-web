@@ -47,19 +47,23 @@ textarea {
     font-size: smaller;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     display: inline-block;
+    color: blue;
 }
 
-#build {
-    width: 70px;
-    height: 40px;
-    background-color: #2da44e;
-    border-radius: 6px;
-    border: 1px solid #d0d7de;
+.buttons {
     box-sizing: border-box;
     float: right;
     position: relative;
     bottom: 50px;
     right: 5px;
+}
+
+.buttons > button {
+    width: 70px;
+    height: 40px;
+    background-color: #2da44e;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
     color: white;
     font-weight: bold;
     cursor: pointer;
