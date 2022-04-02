@@ -91,26 +91,26 @@ class BfEnum {
 
 function testArgs(name: string, args: string[], len: number) {
     if (args.length != len) {
-        $('#output').val(`(Line ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
+        $('#output').val(`(Line: ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
 }
 function testMoreArgs(name: string, args: string[], len: number) {
     if (args.length < len) {
-        $('#output').val(`(Line ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
+        $('#output').val(`(Line: ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
 }
 function testSomeArgs(name: string, args: string[], len: number[]) {
     if (len.indexOf(args.length) == -1) {
-        $('#output').val(`(Line ${line}) Error: mulvar accepts ${len.join(' or ')} arguments but ${args.length} were given.`)
+        $('#output').val(`(Line: ${line}) Error: mulvar accepts ${len.join(' or ')} arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
 }
 
 function varExists(varname: string) {
     if (!variables.has(varname)) {
-        $('#output').val(`(Line ${line}) Error: Variable ${varname} does not exist.`)
+        $('#output').val(`(Line: ${line}) Error: Variable ${varname} does not exist.`)
         throw new Error("Code error");
     }
 }
@@ -651,7 +651,7 @@ var functions = {
         testArgs('createeum', args, 2);
         
         if (!enumtypes.has(args[1])) {
-            $('#output').val(`No enum type ${args[1]} exists`);
+            $('#output').val(`(Line: ${line}) No enum type ${args[1]} exists`);
             throw new Error('Code error');
         }
         enums.set(args[0], args[1]);
@@ -661,11 +661,11 @@ var functions = {
         testMoreArgs('setenum', args, 2);
 
         if (!enums.has(args[0])) {
-            $('#output').val(`No enum ${args[0]} exists`);
+            $('#output').val(`(Line: ${line}) No enum ${args[0]} exists`);
             throw new Error('Code error');
         }
         if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
-            $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
+            $('#output').val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
             throw new Error('Code error');
         }
 
@@ -675,11 +675,11 @@ var functions = {
         testMoreArgs('#ifenum', args, 2);
 
         if (!enums.has(args[0])) {
-            $('#output').val(`No enum ${args[0]} exists`);
+            $('#output').val(`(Line: ${line}) No enum ${args[0]} exists`);
             throw new Error('Code error');
         }
         if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
-            $('#output').val(`Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
+            $('#output').val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
             throw new Error('Code error');
         }
 
@@ -761,7 +761,7 @@ $('#build').on('click', () => {
             commands[argsSplit[i][0]](argsSplit[i].slice(1));
         }
         else {
-            $('#output').val(`Error: Command ${argsSplit[i][0]} does not exist.`);
+            $('#output').val(`(Line: ${line}) Error: Command ${argsSplit[i][0]} does not exist.`);
             throw new Error("Error");
         }
     }
