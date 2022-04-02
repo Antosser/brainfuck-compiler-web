@@ -242,6 +242,23 @@ var functions = {
         move('temp');
         result += ']';
     },
+    icopy: function (args) {
+        testMoreArgs('copy', args, 2);
+        var copyTo = args.slice(1);
+        var copies = copyTo.length;
+        for (var i = 0; i < copies; i++) {
+            varExists(copyTo[i]);
+        }
+        functions.move([args[0], 'temp']);
+        move('temp');
+        result += '[-';
+        for (var i = 0; i < args.length; i++) {
+            move(args[i]);
+            result += '-';
+        }
+        move('temp');
+        result += ']';
+    },
     mulnum: function (args) {
         testSomeArgs('mulnum', args, [2, 3]);
         varExists(args[0]);
@@ -454,6 +471,35 @@ var functions = {
         functions["while"](['temp']);
         functions.clear(['temp']);
     },
+    ifinrange: function (args) {
+        testArgs('#ifinrange', args, 3);
+        var low = parseInt(args[1]);
+        varExists(args[0]);
+        var high = parseInt(args[2]);
+        functions.createVariable(['temp3']);
+        functions.createVariable(['temp4']);
+        functions.createVariable(['temp5']);
+        functions.icopy([args[0], 'temp2']);
+        functions.add(['temp2', low]);
+        functions.set(['temp3', high - low + 1]);
+        functions["while"](['temp3']);
+        functions.copy(['temp2', 'temp4']);
+        functions.set(['temp', 1]);
+        functions["while"](['temp4']);
+        functions.clear(['temp4']);
+        functions.add(['temp', -1]);
+        functions.end([]);
+        functions["while"](['temp']);
+        functions.clear(['temp']);
+        functions.set(['temp5', 1]);
+        functions.end([]);
+        functions.add(['temp3', -1]);
+        functions.add(['temp2', 1]);
+        functions.end([]);
+        functions.clear(['temp2']);
+        functions.iftrue(['temp5']);
+        functions.clear(['temp5']);
+    },
     imove: function (args) {
         testArgs('imove', args, 2);
         varExists(args[0]);
@@ -603,6 +649,7 @@ var commands = {
     "set": functions.set,
     "move": functions.move,
     "imove": functions.imove,
+    "icopy": functions.icopy,
     "copy": functions.copy,
     "mulnum": functions.mulnum,
     "mulvar": functions.mulvar,
@@ -631,7 +678,8 @@ var commands = {
     "createenum": functions.createenum,
     "setenum": functions.setenum,
     "#ifenum": functions.ifenum,
-    "#ifnenum": functions.ifnenum
+    "#ifnenum": functions.ifnenum,
+    "#ifinrange": functions.ifinrange
 };
 $('#build').on('click', function () {
     variables = new Map();
