@@ -16,6 +16,7 @@ var result;
 var scopes;
 var enumtypes;
 var enums;
+var line;
 var preprocessor = [
     // Trim each line
     function (text) {
@@ -85,19 +86,25 @@ var BfEnum = /** @class */ (function () {
 }());
 function testArgs(name, args, len) {
     if (args.length != len) {
-        $('#output').val("Error: " + name + " accepts " + len + " arguments but " + args.length + " were given.");
+        $('#output').val("(Line " + line + ") Error: " + name + " accepts " + len + " arguments but " + args.length + " were given.");
         throw new Error("Code error");
     }
 }
 function testMoreArgs(name, args, len) {
     if (args.length < len) {
-        $('#output').val("Error: " + name + " accepts " + len + " or more arguments but " + args.length + " were given.");
+        $('#output').val("(Line " + line + ") Error: " + name + " accepts " + len + " or more arguments but " + args.length + " were given.");
+        throw new Error("Code error");
+    }
+}
+function testSomeArgs(name, args, len) {
+    if (len.indexOf(args.length) == -1) {
+        $('#output').val("(Line " + line + ") Error: mulvar accepts " + len.join(' or ') + " arguments but " + args.length + " were given.");
         throw new Error("Code error");
     }
 }
 function varExists(varname) {
     if (!variables.has(varname)) {
-        $('#output').val("Error: Variable " + varname + " does not exist.");
+        $('#output').val("(Line " + line + ") Error: Variable " + varname + " does not exist.");
         throw new Error("Code error");
     }
 }
@@ -235,16 +242,40 @@ var functions = {
         move('temp');
         result += ']';
     },
-    multiply: function (args) {
-        testArgs('multiply', args, 2);
+    mulnum: function (args) {
+        testSomeArgs('mulnum', args, [2, 3]);
         varExists(args[0]);
-        functions.move([args[0], 'temp']);
-        move('temp');
-        result += '[-';
-        move(args[0]);
-        result += '+'.repeat(parseInt(args[1]));
-        move('temp');
-        result += ']';
+        if (args.length == 3) {
+            varExists(args[2]);
+        }
+        var num = parseInt(args[1]);
+        functions.copy([args[0], 'temp2']);
+        if (args.length == 2) {
+            functions.clear([args[0]]);
+        }
+        functions["while"](['temp2']);
+        functions.add([args.length == 2 ? args[0] : args[2], num]);
+        functions.add(['temp2', -1]);
+        functions.end([]);
+    },
+    mulvar: function (args) {
+        testSomeArgs('mulvar', args, [2, 3]);
+        varExists(args[0]);
+        varExists(args[1]);
+        if (args.length == 3) {
+            varExists(args[2]);
+        }
+        functions.createVariable(['temp3']);
+        functions.copy([args[0], 'temp2']);
+        functions.copy([args[1], 'temp3']);
+        if (args.length == 2) {
+            functions.clear([args[0]]);
+        }
+        functions["while"](['temp2']);
+        functions.add(['temp2', -1]);
+        functions.copy(['temp3', args.length == 2 ? args[0] : args[2]]);
+        functions.end([]);
+        functions.clear(['temp3']);
     },
     pause: function (args) {
         testArgs('pause', args, 0);
@@ -573,7 +604,8 @@ var commands = {
     "move": functions.move,
     "imove": functions.imove,
     "copy": functions.copy,
-    "multiply": functions.multiply,
+    "mulnum": functions.mulnum,
+    "mulvar": functions.mulvar,
     "#pause": functions.pause,
     "#for": functions["for"],
     "#while": functions["while"],
@@ -611,6 +643,7 @@ $('#build').on('click', function () {
     scopes = [new Scope('scope')];
     enumtypes = new Map();
     enums = new Map();
+    line = 0;
     var text = $('#input').val();
     for (var i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
@@ -618,6 +651,7 @@ $('#build').on('click', function () {
     var args = text.split('\n');
     var argsSplit = Array(args.length).fill(null);
     for (var i = 0; i < args.length; i++) {
+        line++;
         argsSplit[i] = args[i].split(' ');
         if (commands.hasOwnProperty(argsSplit[i][0])) {
             commands[argsSplit[i][0]](argsSplit[i].slice(1));

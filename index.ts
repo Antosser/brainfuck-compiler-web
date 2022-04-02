@@ -5,6 +5,7 @@ var result: string;
 var scopes: Scope[];
 var enumtypes: Map<string, BfEnum>;
 var enums: Map<string, string>;
+var line: number;
 
 var preprocessor: ((data: string) => string)[] = [
     // Trim each line
@@ -90,20 +91,26 @@ class BfEnum {
 
 function testArgs(name: string, args: string[], len: number) {
     if (args.length != len) {
-        $('#output').val(`Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
+        $('#output').val(`(Line ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
 }
 function testMoreArgs(name: string, args: string[], len: number) {
     if (args.length < len) {
-        $('#output').val(`Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
+        $('#output').val(`(Line ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
+        throw new Error("Code error");
+    }
+}
+function testSomeArgs(name: string, args: string[], len: number[]) {
+    if (len.indexOf(args.length) == -1) {
+        $('#output').val(`(Line ${line}) Error: mulvar accepts ${len.join(' or ')} arguments but ${args.length} were given.`)
         throw new Error("Code error");
     }
 }
 
 function varExists(varname: string) {
     if (!variables.has(varname)) {
-        $('#output').val(`Error: Variable ${varname} does not exist.`)
+        $('#output').val(`(Line ${line}) Error: Variable ${varname} does not exist.`)
         throw new Error("Code error");
     }
 }
@@ -249,16 +256,45 @@ var functions = {
         move('temp');
         result += ']';
     },
-    multiply(args: any[]) {
-        testArgs('multiply', args, 2);
+    mulnum(args: any[]) {
+        testSomeArgs('mulnum', args, [2, 3]);
         varExists(args[0]);
-        functions.move([args[0], 'temp']);
-        move('temp');
-        result += '[-';
-        move(args[0]);
-        result += '+'.repeat(parseInt(args[1]));
-        move('temp');
-        result += ']';
+        if (args.length == 3) {
+            varExists(args[2]);
+        }
+
+        let num = parseInt(args[1]);
+        functions.copy([args[0], 'temp2']);
+        if (args.length == 2) {
+            functions.clear([args[0]]);
+        }
+
+        functions.while(['temp2']);
+        functions.add([args.length == 2 ? args[0]: args[2], num]);
+        functions.add(['temp2', -1])
+        functions.end([]);
+    },
+    mulvar(args: any[]) {
+        testSomeArgs('mulvar', args, [2, 3]);
+        varExists(args[0]);
+        varExists(args[1]);
+        if (args.length == 3) {
+            varExists(args[2]);
+        }
+        functions.createVariable(['temp3']);
+
+        functions.copy([args[0], 'temp2']);
+        functions.copy([args[1], 'temp3']);
+        if (args.length == 2) {
+            functions.clear([args[0]]);
+        }
+
+        functions.while(['temp2']);
+        functions.add(['temp2', -1]);
+        functions.copy(['temp3', args.length == 2 ? args[0]: args[2]]);
+        functions.end([]);
+
+        functions.clear(['temp3']);
     },
     pause(args: any[]) {
         testArgs('pause', args, 0);
@@ -613,7 +649,8 @@ var commands = {
     "move": functions.move,
     "imove": functions.imove,
     "copy": functions.copy,
-    "multiply": functions.multiply,
+    "mulnum": functions.mulnum,
+    "mulvar": functions.mulvar,
     "#pause": functions.pause,
     "#for": functions.for,
     "#while": functions.while,
@@ -652,8 +689,9 @@ $('#build').on('click', () => {
     scopes = [new Scope('scope')];
     enumtypes = new Map();
     enums = new Map();
+    line = 0;
 
-    let text: string = <string>$('#input').val();
+    let text: string = $('#input').val() as string;
     for (let i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
     }
@@ -661,6 +699,7 @@ $('#build').on('click', () => {
     let args: string[] = text.split('\n');
     let argsSplit: string[][] = Array(args.length).fill(null);
     for (let i = 0; i < args.length; i++) {
+        line++;
         argsSplit[i] = args[i].split(' ');
         if (commands.hasOwnProperty(argsSplit[i][0])) {
             commands[argsSplit[i][0]](argsSplit[i].slice(1));
