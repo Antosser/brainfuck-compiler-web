@@ -11,19 +11,19 @@
     <script src="dist/index.js" defer></script>
 </head>
 <body>
-    <div class="label">
+    <div class="label header">
         Brainfuck Compiler
         <div class="githublink">
             <a href="https://github.com/Antosser/brainfuck-compiler-web" class="githublink">GitHub Repo</a>
         </div>
     </div>
-    <hr>
     <div class="container">
         <div class="item">
             <div class="label">
                 Input
             </div>
             <textarea id="input" spellcheck="false"></textarea>
+            <button id="build">Build</button>
         </div>
         <div class="item">
             <div class="label">
@@ -32,7 +32,6 @@
             <textarea id="output" spellcheck="false"></textarea>
         </div>
     </div>
-    <button id="build">Build</button>
     <button id="rmLocalStorage">Remove text from local storage</button>
 </body>
 </html>
