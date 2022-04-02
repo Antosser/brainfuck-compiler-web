@@ -500,6 +500,13 @@ var functions = {
         functions.iftrue(['temp5']);
         functions.clear(['temp5']);
     },
+    ifletterinrange: function (args) {
+        testArgs('#ifletterinrange', args, 3);
+        var low = args[1].charCodeAt(0);
+        varExists(args[0]);
+        var high = args[2].charCodeAt(0);
+        functions.ifinrange([args[0], low, high]);
+    },
     imove: function (args) {
         testArgs('imove', args, 2);
         varExists(args[0]);
@@ -679,7 +686,8 @@ var commands = {
     "setenum": functions.setenum,
     "#ifenum": functions.ifenum,
     "#ifnenum": functions.ifnenum,
-    "#ifinrange": functions.ifinrange
+    "#ifinrange": functions.ifinrange,
+    "#ifletterinrange": functions.ifletterinrange
 };
 $('#build').on('click', function () {
     variables = new Map();

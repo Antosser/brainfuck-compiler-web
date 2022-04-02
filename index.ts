@@ -535,6 +535,15 @@ var functions = {
         functions.iftrue(['temp5']);
         functions.clear(['temp5']);
     },
+    ifletterinrange(args: any[]) {
+        testArgs('#ifletterinrange', args, 3);
+
+        let low = args[1].charCodeAt(0);
+        varExists(args[0]);
+        let high = args[2].charCodeAt(0);
+        
+        functions.ifinrange([args[0], low, high]);
+    },
     imove(args: any[]) {
         testArgs('imove', args, 2);
         varExists(args[0]);
@@ -733,6 +742,7 @@ var commands = {
     "#ifenum": functions.ifenum,
     "#ifnenum": functions.ifnenum,
     "#ifinrange": functions.ifinrange,
+    "#ifletterinrange": functions.ifletterinrange,
 };
 
 $('#build').on('click', () => {
