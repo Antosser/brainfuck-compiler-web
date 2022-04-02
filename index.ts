@@ -509,7 +509,16 @@ var functions = {
         functions.createVariable(['temp4']);
         functions.createVariable(['temp5']);
 
-        functions.icopy([args[0], 'temp2']);
+        functions.while([args[0]]);
+        functions.add(['temp', 1]);
+        functions.add(['temp2', -1]);
+        functions.add([args[0], -1]);
+        functions.end([]);
+        functions.while(['temp']);
+        functions.add([args[0], 1]);
+        functions.add(['temp', -1]);
+        functions.end([]);
+
         functions.add(['temp2', low]);
         functions.set(['temp3', high - low + 1]);
 
