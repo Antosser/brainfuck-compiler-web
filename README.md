@@ -25,7 +25,10 @@ Don't put ; at the end of any line.
 
 #### Computation
 - **add** {variable} {number} - Add number to variable
-- **multiply** {variable} {number} - Multiply variable by number
+- **mulnum** {variable1} {number} - Multiply variable with number and store result in variable1
+- **mulnum** {variable1} {number} {variable2} - Multiply variable with number and store result in variable2
+- **mulvar** {variable1} {variable2} - Multiply variable1 with variable2 and store result in variable1
+- **mulvar** {variable1} {variable2} {variable3} - Multiply variable1 with variable2 and store result in variable3
 - **divnum** {variable} {value} {module-output} - Divide value of variable by {value} and store result into {variable} and {module-output}
 - **divvar** {variable} {variable2} {module-output} - Divide value of variable by {variable2} and store result into {variable} and {module-output}
 
@@ -93,7 +96,7 @@ set a 20
 add a 3
 
 // Multiply a with 3 (a will be 69)
-multiply a 3
+mulnum a 3
 
 // Now divide a by 3 ( a will be 23 again)
 // First we need to create a variable for the module
