@@ -419,7 +419,7 @@ var functions = {
         }
         else if (args[1] == 'num' || args[1] == 'letter') {
             if (args[1] == 'letter') {
-                args[1] = args[1].charCodeAt(0);
+                args[2] = args[2].charCodeAt(0);
             }
             functions.copy([args[0], 'temp3']);
 
