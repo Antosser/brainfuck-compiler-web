@@ -610,6 +610,7 @@ var functions = {
         functions.createVariable(['printdec-ten']);
         functions.createVariable(['printdec-hun']);
 
+        functions.clear(['temp4'])
         functions.clear(['printdec-one']);
         functions.clear(['printdec-ten']);
         functions.clear(['printdec-hun']);
