@@ -70,3 +70,7 @@ textarea {
     font-weight: bold;
     cursor: pointer;
 }
+
+#decompile {
+    background-color: #dc3545;
+}
