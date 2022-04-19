@@ -825,8 +825,7 @@ $('#build').on('click', () => {
     $('#output').val(result);
 });
 
-$('#decompile').on('click', () => {
-    let text: string = $('#output').val() as string;
+function decopmpile(text: string) {
     let position: number = 0;
     let result = '';
     let add = 0;
@@ -868,7 +867,11 @@ $('#decompile').on('click', () => {
     }
     if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
 
-    $('#output').val(result);
+    return result;
+}
+
+$('#decompile').on('click', () => {
+    $('#output').val(decopmpile($('#output').val() as string));
 });
 
 // Localstorage

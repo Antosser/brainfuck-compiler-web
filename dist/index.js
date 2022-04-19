@@ -748,9 +748,8 @@ $('#build').on('click', function () {
     }
     $('#output').val(result);
 });
-$('#decompile').on('click', function () {
+function decopmpile(text) {
     var e_1, _a;
-    var text = $('#output').val();
     var position = 0;
     var result = '';
     var add = 0;
@@ -821,7 +820,10 @@ $('#decompile').on('click', function () {
         result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
         add = 0;
     }
-    $('#output').val(result);
+    return result;
+}
+$('#decompile').on('click', function () {
+    $('#output').val(decopmpile($('#output').val()));
 });
 if (localStorage.getItem('bfc-text') === null) {
     localStorage.setItem('bfc-text', '');
