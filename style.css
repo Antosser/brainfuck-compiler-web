@@ -59,7 +59,9 @@ textarea {
 }
 
 .buttons > button {
-    width: 70px;
+    /* width: 70px; */
+    padding-left: 10px;
+    padding-right: 10px;
     height: 40px;
     background-color: #2da44e;
     border-radius: 6px;

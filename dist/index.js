@@ -18,6 +18,17 @@ var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
 };
+var __values = (this && this.__values) || function(o) {
+    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+    if (m) return m.call(o);
+    if (o && typeof o.length === "number") return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+};
 var usedmemory;
 var position;
 var result;
@@ -175,10 +186,10 @@ function move(varname) {
 var functions = {
     createVariable: function (args) {
         testSomeArgs('var', args, [1, 2]);
-        if (scopes[scopes.length - 1].variables.has(args[0])) {
-            $('#output').val("(Line: " + line + ") Error: Variable " + args[0] + " already exists in this scope.");
-            throw new Error('Code error');
-        }
+        // if (scopes[scopes.length - 1].variables.has(args[0])) {
+        //     $('#output').val(`(Line: ${line}) Error: Variable ${args[0]} already exists in this scope.`)
+        //     throw new Error('Code error');
+        // }
         scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
         usedmemory.push(getAvailablePosition());
         if (args.length == 2) {
@@ -745,6 +756,81 @@ $('#build').on('click', function () {
     }
     for (var i = 0; i < postprocessor.length; i++) {
         result = postprocessor[i](result);
+    }
+    $('#output').val(result);
+});
+$('#decompile').on('click', function () {
+    var e_1, _a;
+    var text = $('#output').val();
+    var position = 0;
+    var result = '';
+    var add = 0;
+    var intendation = 0;
+    try {
+        for (var text_1 = __values(text), text_1_1 = text_1.next(); !text_1_1.done; text_1_1 = text_1.next()) {
+            var char = text_1_1.value;
+            if (char === '>') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                position++;
+            }
+            else if (char === '<') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                position--;
+            }
+            else if (char === '+') {
+                add++;
+            }
+            else if (char === '-') {
+                add--;
+            }
+            else if (char === '.') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                result += '  '.repeat(intendation) + "print v" + position + "\n";
+            }
+            else if (char === ',') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                result += '  '.repeat(intendation) + "input v" + position + "\n";
+            }
+            else if (char === '[') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                result += '  '.repeat(intendation) + "#while v" + position + "\n";
+                intendation++;
+            }
+            else if (char === ']') {
+                if (add !== 0) {
+                    result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+                    add = 0;
+                }
+                intendation--;
+                result += '  '.repeat(intendation) + "#end v" + position + "\n";
+            }
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (text_1_1 && !text_1_1.done && (_a = text_1["return"])) _a.call(text_1);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
+    if (add !== 0) {
+        result += '  '.repeat(intendation) + "add v" + position + " " + add + "\n";
+        add = 0;
     }
     $('#output').val(result);
 });

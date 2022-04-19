@@ -188,10 +188,10 @@ var functions = {
     createVariable(args: any[]) {
         testSomeArgs('var', args, [1, 2]);
 
-        if (scopes[scopes.length - 1].variables.has(args[0])) {
-            $('#output').val(`(Line: ${line}) Error: Variable ${args[0]} already exists in this scope.`)
-            throw new Error('Code error');
-        }
+        // if (scopes[scopes.length - 1].variables.has(args[0])) {
+        //     $('#output').val(`(Line: ${line}) Error: Variable ${args[0]} already exists in this scope.`)
+        //     throw new Error('Code error');
+        // }
     
         scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
         usedmemory.push(getAvailablePosition());
@@ -822,6 +822,52 @@ $('#build').on('click', () => {
         result = postprocessor[i](result);
     }
     
+    $('#output').val(result);
+});
+
+$('#decompile').on('click', () => {
+    let text: string = $('#output').val() as string;
+    let position: number = 0;
+    let result = '';
+    let add = 0;
+    let intendation = 0;
+    
+    for (let char of text) {
+        if (char === '>') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            position++;
+        }
+        else if (char === '<') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            position--;
+        }
+        else if (char === '+') {
+            add++;
+        }
+        else if (char === '-') {
+            add--;
+        }
+        else if (char === '.') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            result += `${'  '.repeat(intendation)}print v${position}\n`;
+        }
+        else if (char === ',') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            result += `${'  '.repeat(intendation)}input v${position}\n`;
+        }
+        else if (char === '[') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            result += `${'  '.repeat(intendation)}#while v${position}\n`;
+            intendation++;
+        }
+        else if (char === ']') {
+            if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+            intendation--;
+            result += `${'  '.repeat(intendation)}#end v${position}\n`;
+        }
+    }
+    if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
+
     $('#output').val(result);
 });
 
