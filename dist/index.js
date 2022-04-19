@@ -1,15 +1,23 @@
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
         }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+        finally { if (e) throw e.error; }
+    }
+    return ar;
 };
-var variables;
+var __spread = (this && this.__spread) || function () {
+    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+    return ar;
+};
 var usedmemory;
 var position;
 var result;
@@ -67,7 +75,7 @@ var postprocessor = [
 var Scope = /** @class */ (function () {
     function Scope(type, variable) {
         this.type = type;
-        this.variables = [];
+        this.variables = new Map();
         this.variable = variable;
     }
     return Scope;
@@ -87,26 +95,55 @@ var BfEnum = /** @class */ (function () {
 function testArgs(name, args, len) {
     if (args.length != len) {
         $('#output').val("(Line: " + line + ") Error: " + name + " accepts " + len + " arguments but " + args.length + " were given.");
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
 function testMoreArgs(name, args, len) {
     if (args.length < len) {
         $('#output').val("(Line: " + line + ") Error: " + name + " accepts " + len + " or more arguments but " + args.length + " were given.");
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
 function testSomeArgs(name, args, len) {
     if (len.indexOf(args.length) == -1) {
         $('#output').val("(Line: " + line + ") Error: mulvar accepts " + len.join(' or ') + " arguments but " + args.length + " were given.");
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
+function getVarIndex(varname) {
+    var found = -1;
+    scopes.forEach(function (scope) {
+        if (scope.variables.has(varname)) {
+            found = scope.variables.get(varname);
+        }
+    });
+    return found;
+}
 function varExists(varname) {
-    if (!variables.has(varname)) {
+    var found = false;
+    scopes.forEach(function (scope) {
+        if (scope.variables.has(varname)) {
+            found = true;
+        }
+    });
+    return found;
+}
+function checkVar(varname) {
+    if (getVarIndex(varname) == -1) {
         $('#output').val("(Line: " + line + ") Error: Variable " + varname + " does not exist.");
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
+}
+function getAvailablePosition() {
+    if (usedmemory.length == 0) {
+        return 0;
+    }
+    for (var i = 0; i < Math.max.apply(Math, __spread(usedmemory)); i++) {
+        if (usedmemory.indexOf(i) == -1) {
+            return i;
+        }
+    }
+    return Math.max.apply(Math, __spread(usedmemory)) + 1;
 }
 function bestMultiplication(n) {
     var facs = [];
@@ -126,31 +163,26 @@ function bestMultiplication(n) {
     return currentbest;
 }
 function move(varname) {
-    var dif = variables.get(varname) - position;
-    for (var i = 0; i < Math.abs(dif); i++) {
-        if (dif < 0) {
-            result += '<';
-        }
-        else if (dif > 0) {
-            result += '>';
-        }
+    var dif = getVarIndex(varname) - position;
+    if (dif < 0) {
+        result += '<'.repeat(Math.abs(dif));
+    }
+    else if (dif > 0) {
+        result += '>'.repeat(Math.abs(dif));
     }
     position += dif;
 }
 var functions = {
     createVariable: function (args) {
-        testArgs('var', args, 1);
-        if (!variables.has(args[0])) {
-            var nextSpace = 0;
-            for (var i = 0; true; i++) {
-                if (!usedmemory.includes(i)) {
-                    nextSpace = i;
-                    break;
-                }
-            }
-            variables.set(args[0], nextSpace);
-            usedmemory.push(nextSpace);
-            scopes[scopes.length - 1].variables.push(nextSpace);
+        testSomeArgs('var', args, [1, 2]);
+        if (scopes[scopes.length - 1].variables.has(args[0])) {
+            $('#output').val("(Line: " + line + ") Error: Variable " + args[0] + " already exists in this scope.");
+            throw new Error('Code error');
+        }
+        scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
+        usedmemory.push(getAvailablePosition());
+        if (args.length == 2) {
+            functions.set([args[0], args[1]]);
         }
     },
     add: function (args) {
@@ -307,27 +339,11 @@ var functions = {
         scopes.push(new Scope('while', args[0]));
     },
     end: function (args) {
-        var e_1, _a;
         testArgs('end', args, 0);
         var popped = scopes.pop();
-        try {
-            // variables[args[0]] = nextSpace;
-            for (var _b = __values(variables.keys()), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var k = _c.value;
-                if (popped.variables.includes(variables.get(k))) {
-                    variables["delete"](k);
-                }
-            }
+        for (var i = 0; i < popped.variables.size; i++) {
+            usedmemory.pop();
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b["return"])) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        // usedmemory.push(nextSpace);
-        usedmemory = usedmemory.filter(function (e) { return !popped.variables.includes(e); });
         if (popped.type == 'while') {
             move(popped.variable);
             result += ']';
@@ -529,6 +545,7 @@ var functions = {
         varExists(args[0]);
         varExists(args[2]);
         functions.createVariable(['temp4']);
+        functions.clear(['temp4']);
         var num = parseInt(args[1]);
         functions.move([args[0], 'temp4']);
         functions["while"](['temp4']);
@@ -546,6 +563,7 @@ var functions = {
         varExists(args[1]);
         varExists(args[2]);
         functions.createVariable(['temp4']);
+        functions.clear(['temp4']);
         functions.move([args[0], 'temp4']);
         functions["while"](['temp4']);
         functions.add(['temp4', -1]);
@@ -699,13 +717,12 @@ var commands = {
     "#ifletterinrange": functions.ifletterinrange
 };
 $('#build').on('click', function () {
-    variables = new Map();
-    variables.set('temp2', 0);
-    variables.set('temp', 1);
-    usedmemory = [0, 1];
+    usedmemory = [];
     position = 0;
-    result = '';
     scopes = [new Scope('scope')];
+    functions.createVariable(['temp2']);
+    functions.createVariable(['temp']);
+    result = '';
     enumtypes = new Map();
     enums = new Map();
     line = 0;

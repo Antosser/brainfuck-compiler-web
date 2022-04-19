@@ -1,4 +1,3 @@
-var variables: Map<string, number>;
 var usedmemory: number[];
 var position: number;
 var result: string;
@@ -64,12 +63,12 @@ var postprocessor: ((data: string) => string)[] = [
 
 class Scope {
     type: string;
-    variables: number[];
+    variables: Map<string, number>;
     variable: string | null;
 
     constructor(type: string, variable?: string) {
         this.type = type;
-        this.variables = [];
+        this.variables = new Map();
         this.variable = variable;
     }
 }
@@ -92,27 +91,65 @@ class BfEnum {
 function testArgs(name: string, args: string[], len: number) {
     if (args.length != len) {
         $('#output').val(`(Line: ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`)
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
 function testMoreArgs(name: string, args: string[], len: number) {
     if (args.length < len) {
         $('#output').val(`(Line: ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`)
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
 function testSomeArgs(name: string, args: string[], len: number[]) {
     if (len.indexOf(args.length) == -1) {
         $('#output').val(`(Line: ${line}) Error: mulvar accepts ${len.join(' or ')} arguments but ${args.length} were given.`)
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
 }
 
-function varExists(varname: string) {
-    if (!variables.has(varname)) {
+function getVarIndex(varname: string): number {
+    let found: number = -1;
+
+    scopes.forEach(scope => {
+        if (scope.variables.has(varname)) {
+            found = scope.variables.get(varname);
+        }
+    });
+
+    return found;
+}
+
+function varExists(varname: any) {
+    let found = false;
+
+    scopes.forEach(scope => {
+        if (scope.variables.has(varname)) {
+            found = true;
+        }
+    });
+
+    return found;
+}
+
+function checkVar(varname: string) {
+    if (getVarIndex(varname) == -1) {
         $('#output').val(`(Line: ${line}) Error: Variable ${varname} does not exist.`)
-        throw new Error("Code error");
+        throw new Error('Code error');
     }
+}
+
+function getAvailablePosition() {
+    if (usedmemory.length == 0) {
+        return 0;
+    }
+
+    for (let i = 0; i < Math.max(...usedmemory); i++) {
+        if (usedmemory.indexOf(i) == -1) {
+            return i;
+        }
+    }
+
+    return Math.max(...usedmemory) + 1;
 }
 
 function bestMultiplication(n: number) {
@@ -135,33 +172,32 @@ function bestMultiplication(n: number) {
 }
 
 function move(varname: string) {
-    let dif = variables.get(varname) - position;
+    let dif = getVarIndex(varname) - position;
 
-    for (let i = 0; i < Math.abs(dif); i++) {
-        if (dif < 0) {
-            result += '<';
-        }
-        else if (dif > 0) {
-            result += '>';
-        }
+    if (dif < 0) {
+        result += '<'.repeat(Math.abs(dif));
     }
+    else if (dif > 0) {
+        result += '>'.repeat(Math.abs(dif));
+    }
+
     position += dif;
 }
 
 var functions = {
     createVariable(args: any[]) {
-        testArgs('var', args, 1)
-        if (!variables.has(args[0])) {
-            let nextSpace = 0;
-            for (let i = 0; true; i++) {
-                if (!usedmemory.includes(i)) {
-                    nextSpace = i;
-                    break;
-                }
-            }
-            variables.set(args[0], nextSpace);
-            usedmemory.push(nextSpace);
-            scopes[scopes.length - 1].variables.push(nextSpace);
+        testSomeArgs('var', args, [1, 2]);
+
+        if (scopes[scopes.length - 1].variables.has(args[0])) {
+            $('#output').val(`(Line: ${line}) Error: Variable ${args[0]} already exists in this scope.`)
+            throw new Error('Code error');
+        }
+    
+        scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
+        usedmemory.push(getAvailablePosition());
+
+        if (args.length == 2) {
+            functions.set([args[0], args[1]]);
         }
     },
     add(args: any[]) {
@@ -331,14 +367,9 @@ var functions = {
         testArgs('end', args, 0);
         let popped = scopes.pop();
         
-        // variables[args[0]] = nextSpace;
-        for (let k of variables.keys()) {
-            if (popped.variables.includes(variables.get(k))) {
-                variables.delete(k);
-            }
+        for (let i = 0; i < popped.variables.size; i++) {
+            usedmemory.pop();
         }
-        // usedmemory.push(nextSpace);
-        usedmemory = usedmemory.filter(e => !popped.variables.includes(e));
 
         if (popped.type == 'while') {
             move(popped.variable);
@@ -568,6 +599,7 @@ var functions = {
         varExists(args[0]);
         varExists(args[2]);
         functions.createVariable(['temp4']);
+        functions.clear(['temp4']);
         let num = parseInt(args[1]);
 
         functions.move([args[0], 'temp4']);
@@ -586,6 +618,7 @@ var functions = {
         varExists(args[1]);
         varExists(args[2]);
         functions.createVariable(['temp4']);
+        functions.clear(['temp4']);
 
         functions.move([args[0], 'temp4']);
         functions.while(['temp4']);
@@ -756,13 +789,12 @@ var commands = {
 };
 
 $('#build').on('click', () => {
-    variables = new Map();
-    variables.set('temp2', 0);
-    variables.set('temp', 1);
-    usedmemory = [0, 1];
+    usedmemory = [];
     position = 0;
-    result = '';
     scopes = [new Scope('scope')];
+    functions.createVariable(['temp2']);
+    functions.createVariable(['temp']);
+    result = '';
     enumtypes = new Map();
     enums = new Map();
     line = 0;
