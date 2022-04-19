@@ -37,7 +37,6 @@ var enumtypes;
 var enums;
 var line;
 var preprocessor = [
-    // Trim each line
     function (text) {
         var result = text.split('\n');
         for (var i = 0; i < result.length; i++) {
@@ -45,7 +44,6 @@ var preprocessor = [
         }
         return result.join('\n');
     },
-    // Remove comments
     function (text) {
         var textsplit = text.split('\n');
         var result = "";
@@ -56,9 +54,7 @@ var preprocessor = [
         }
         return result;
     },
-    // Remove empty lines
     function (text) { return text.split('\n').filter(function (n) { return n; }).join('\n'); },
-    // Newl and Space
     function (text) {
         var arr = text.split('\n');
         if (arr.includes('newl')) {
@@ -71,7 +67,6 @@ var preprocessor = [
     }
 ];
 var postprocessor = [
-    // \n every 50 characters
     function (text) {
         var postprocessed = '';
         for (var i = 0; i < text.length; i++) {
@@ -83,7 +78,7 @@ var postprocessor = [
         return postprocessed;
     },
 ];
-var Scope = /** @class */ (function () {
+var Scope = (function () {
     function Scope(type, variable) {
         this.type = type;
         this.variables = new Map();
@@ -91,7 +86,7 @@ var Scope = /** @class */ (function () {
     }
     return Scope;
 }());
-var BfEnum = /** @class */ (function () {
+var BfEnum = (function () {
     function BfEnum(assignments) {
         var _this = this;
         this.assignments = new Map();
@@ -186,10 +181,6 @@ function move(varname) {
 var functions = {
     createVariable: function (args) {
         testSomeArgs('var', args, [1, 2]);
-        // if (scopes[scopes.length - 1].variables.has(args[0])) {
-        //     $('#output').val(`(Line: ${line}) Error: Variable ${args[0]} already exists in this scope.`)
-        //     throw new Error('Code error');
-        // }
         scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
         usedmemory.push(getAvailablePosition());
         if (args.length == 2) {
@@ -399,8 +390,6 @@ var functions = {
         functions.createVariable(['temp3']);
         if (args[1] == 'var') {
             varExists(args[2]);
-            // functions.copy([args[0], 'temp']);
-            // functions.copy([args[2], 'temp3']);
             functions.move([args[0], 'temp2']);
             functions["while"](['temp2']);
             functions.add([args[0], 1]);
@@ -834,7 +823,6 @@ $('#decompile').on('click', function () {
     }
     $('#output').val(result);
 });
-// Localstorage
 if (localStorage.getItem('bfc-text') === null) {
     localStorage.setItem('bfc-text', '');
 }

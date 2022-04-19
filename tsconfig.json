@@ -4,7 +4,8 @@
         "lib": [
             "DOM"
         ],
-        "downlevelIteration": true
+        "downlevelIteration": true,
+        "removeComments": true,
     },
     "files": [
         "index.ts"
