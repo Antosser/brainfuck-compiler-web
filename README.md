@@ -6,6 +6,7 @@ Brainfuck was designed to be the hardest programming language ever, but I made a
 2. Enter your code in the text area below "Input".
 3. Click the "Build" button.
 4. Copy the code from the text area below "Ouput" and paste it into your brainfuck interpreter.
+5. (If you share this code somewhere else, please include a link to this GitHub repo)
 
 ## Features
 - Your code uses scopes. If a variable goes out of scope it's memory will be cleared
