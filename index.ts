@@ -1056,6 +1056,18 @@ else {
     $('#input').val(localStorage.getItem('bfc-text'));
 }
 
+if (localStorage.getItem('bfc-optimize') === null) {
+    localStorage.setItem('bfc-optimize', '0');
+}
+else {
+    $('#optimizecheck').prop('checked', localStorage.getItem('bfc-optimize') === '1');
+}
+
+$('#optimizecheck').on('change', () => {
+    localStorage.setItem('bfc-optimize', $('#optimizecheck').is(':checked') ? '1' : '0');
+});
+
+
 $('#input').on('input', () => {
     localStorage.setItem('bfc-text', $('#input').val() as string);
 });
