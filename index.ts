@@ -5,11 +5,12 @@ var scopes: Scope[];
 var enumtypes: Map<string, BfEnum>;
 var enums: Map<string, string>;
 var line: number;
+var positions: number[] = [0];
 
 var preprocessor: ((data: string) => string)[] = [
     // Trim each line
-    text => {
-        let result = text.split('\n')
+    input => {
+        let result = input.split('\n')
         for (let i = 0; i < result.length; i++) {
             result[i] = result[i].trim();
         }
@@ -17,8 +18,8 @@ var preprocessor: ((data: string) => string)[] = [
     },
 
     // Remove comments
-    text => {
-        let textsplit = text.split('\n')
+    input => {
+        let textsplit = input.split('\n')
         let result = "";
         for (let i = 0; i < textsplit.length; i++) {
             if (!textsplit[i].startsWith('//')) {
@@ -29,29 +30,163 @@ var preprocessor: ((data: string) => string)[] = [
     },
 
     // Remove empty lines
-    text => text.split('\n').filter(n => n).join('\n'),
-
-    // Newl and Space
-    text => {
-        let arr = text.split('\n');
-
-        if (arr.includes('newl')) {
-            text = 'var newl\nadd newl 10\n' + text;
-        }
-        if (arr.includes('space')) {
-            text = 'var space\nadd space 32\n' + text;
-        }
-        return text;
-    }
+    input => input.split('\n').filter(n => n).join('\n'),
 ];
 
 var postprocessor: ((data: string) => string)[] = [
+    // Move
+    input => {
+        let frequencies_key: [number, number][] = [];
+        let frequencies_value: number[] = [];
+
+        for (let i = 0; i < positions.length - 1; i++) {
+            if (i === positions.length - 1) break;
+
+            let key: [number, number] = positions.slice(i, i + 2).sort((a, b) => a - b) as [number, number];
+
+            // Check if array is already in the array
+            let index = frequencies_key.findIndex(x => x[0] === key[0] && x[1] === key[1]);
+            if (index == -1) {
+                frequencies_key.push(key);
+                frequencies_value.push(1);
+            }
+            else {
+                frequencies_value[index]++;
+            }
+        }
+
+        // Remove frequency keys and values whose both values are the same
+        let frequencies_key_filtered: [number, number][] = [];
+        let frequencies_value_filtered: number[] = [];
+        for (let i = 0; i < frequencies_key.length; i++) {
+            if (frequencies_value[i] === 1) {
+                frequencies_key_filtered.push(frequencies_key[i]);
+                frequencies_value_filtered.push(frequencies_value[i]);
+            }
+        }
+        frequencies_key = frequencies_key_filtered;
+        frequencies_value = frequencies_value_filtered;
+
+        // Sort frequencies by value into array of keys without modifying the original array
+        let sorted_frequencies_key: [number, number][] = frequencies_key.sort((a, b) => frequencies_value[frequencies_key.indexOf(a)] - frequencies_value[frequencies_key.indexOf(b)]);
+        //sorted_frequencies_key.reverse();
+        console.log(JSON.parse(JSON.stringify({sorted_frequencies_key})));
+
+        let possibilities: number[][] = [];
+
+        for (let i = 0; i < sorted_frequencies_key.length; i++) {
+            // Find index of possibility that includes the first element of key
+            let index_first = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][0]));
+            // Find index of possibility that includes the second element of key
+            let index_second = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][1]));
+
+            if (index_first == -1 && index_second == -1) {
+                possibilities.push(sorted_frequencies_key[i]);
+                continue;
+            }
+
+            if (index_first == -1) {
+                // Swap first and second
+                let temp = sorted_frequencies_key[i][0];
+                sorted_frequencies_key[i][0] = sorted_frequencies_key[i][1];
+                sorted_frequencies_key[i][1] = temp;
+                index_first = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][0]));
+                index_second = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][1]));
+            }
+
+            if (index_second == -1) {
+
+                // Get the index of the first possibility with the first element of key
+                let index_first_possibility = possibilities[index_first].indexOf(sorted_frequencies_key[i][0]);
+
+                // Check if possibilities[index_first] is on the left side
+                let left_first = (index_first_possibility < possibilities[index_first].length / 2);
+
+                // Put the second element of key to the side of possibility
+                if (left_first) {
+                    possibilities[index_first].splice(index_first_possibility + 1, 0, sorted_frequencies_key[i][1]);
+                }
+                else {
+                    possibilities[index_first].splice(index_first_possibility, 0, sorted_frequencies_key[i][1]);
+                }
+            
+            }
+            else {
+                // Check if possibilities[index_first] is on the left side
+                let left_first = (possibilities[index_first].indexOf(sorted_frequencies_key[i][0]) < possibilities[index_first].length / 2);
+
+                // Reverse if true
+                if (left_first) {
+                    possibilities[index_first].reverse();
+                }
+
+                // Check if possibilities[index_second] is on the left side
+                let left_second = (possibilities[index_second].indexOf(sorted_frequencies_key[i][1]) < possibilities[index_second].length / 2);
+
+                // Reverse if false
+                if (!left_second) {
+                    possibilities[index_second].reverse();
+                }
+
+                // Pop second into first
+                possibilities[index_first].push(possibilities[index_second].pop());
+            }
+        }
+        
+        // log possibilities
+        console.log({possibilities});
+        
+        // Replace every element of positions with the index of the firstpossibility
+        let newPositions = [];
+        for (let i = 0; i < positions.length; i++) {
+            newPositions.push(possibilities[0].indexOf(positions[i]));
+        }
+        console.log({positions});
+        console.log({newPositions});
+
+        position = 0;
+
+        for (let i = 0; i < newPositions.length; i++) {
+            let dif = newPositions[i] - position;
+
+            if (dif < 0) {
+                input = input.replace('*', '<'.repeat(Math.abs(dif)));
+            }
+            else if (dif > 0) {
+                input = input.replace('*', '>'.repeat(Math.abs(dif)));
+            }
+            else {
+                input = input.replace('*', '');
+            }
+
+            position += dif;
+        }
+
+        // Get the sum of the differences between the old positions
+        let sum = 0;
+        for (let i = 0; i < positions.length; i++) {
+            if (i === positions.length - 1) break;
+            sum += Math.abs(positions[i] - positions[i + 1]);
+        }
+
+        // Get the sum of the differences between the new positions
+        let newSum = 0;
+        for (let i = 0; i < newPositions.length; i++) {
+            if (i === newPositions.length - 1) break;
+            newSum += Math.abs(newPositions[i] - newPositions[i + 1]);
+        }
+
+        console.log(`Reduced from ${sum} to ${newSum} (by ${sum - newSum})`);
+
+        return input;
+    },
+
     // \n every 50 characters
-    text => {
+    input => {
         let postprocessed = '';
 
-        for (let i = 0; i < text.length; i++) {
-            postprocessed += text[i];
+        for (let i = 0; i < input.length; i++) {
+            postprocessed += input[i];
             if ((i + 1) % 100 == 0) {
                 postprocessed += '\n';
             }
@@ -174,14 +309,17 @@ function bestMultiplication(n: number) {
 function move(varname: string) {
     let dif = getVarIndex(varname) - position;
 
-    if (dif < 0) {
-        result += '<'.repeat(Math.abs(dif));
-    }
-    else if (dif > 0) {
-        result += '>'.repeat(Math.abs(dif));
-    }
+    // if (dif < 0) {
+    //     result += '<'.repeat(Math.abs(dif));
+    // }
+    // else if (dif > 0) {
+    //     result += '>'.repeat(Math.abs(dif));
+    // }
+
+    result += '*';
 
     position += dif;
+    positions.push(position);
 }
 
 var functions = {
@@ -677,16 +815,6 @@ var functions = {
         functions.move([args[1], args[0]]);
         functions.move(['temp', args[1]]);
     },
-    newl(args: any[]) {
-        testArgs('newl', args, 0);
-
-        functions.print(['newl']);
-    },
-    space(args: any[]) {
-        testArgs('space', args, 0);
-
-        functions.print(['space']);
-    },
     for(args: any[]) {
         testArgs('#for', args, 1);
         varExists(args[0]);
@@ -777,8 +905,6 @@ var commands = {
     "goto": functions.goto,
     "printdec": functions.printdec,
     "switch": functions.switch,
-    "newl": functions.newl,
-    "space": functions.space,
     "enumtype": functions.enumtype,
     "createenum": functions.createenum,
     "setenum": functions.setenum,
@@ -786,11 +912,13 @@ var commands = {
     "#ifnenum": functions.ifnenum,
     "#ifinrange": functions.ifinrange,
     "#ifletterinrange": functions.ifletterinrange,
+    "m": arr => move(arr[0]),
 };
 
 $('#build').on('click', () => {
     usedmemory = [];
     position = 0;
+    positions = [];
     scopes = [new Scope('scope')];
     functions.createVariable(['temp2']);
     functions.createVariable(['temp']);
@@ -825,13 +953,13 @@ $('#build').on('click', () => {
     $('#output').val(result);
 });
 
-function decopmpile(text: string) {
+function decopmpile(input: string) {
     let position: number = 0;
     let result = '';
     let add = 0;
     let intendation = 0;
     
-    for (let char of text) {
+    for (let char of input) {
         if (char === '>') {
             if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
             position++;
@@ -862,7 +990,7 @@ function decopmpile(text: string) {
         else if (char === ']') {
             if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
             intendation--;
-            result += `${'  '.repeat(intendation)}#end v${position}\n`;
+            result += `${'  '.repeat(intendation)}#end\n`;
         }
     }
     if(add!==0){result+=`${'  '.repeat(intendation)}add v${position} ${add}\n`;add=0}
