@@ -71,9 +71,15 @@ textarea {
     cursor: pointer;
     display: inline-block;
 }
+
 .buttons > .withcheckbox {
     position: relative;
     top: 2px;
+}
+
+.buttons > button > label {
+    position: relative;
+    top: -2px;
 }
 
 #decompile {
