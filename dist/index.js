@@ -5,7 +5,12 @@ var scopes;
 var enumtypes;
 var enums;
 var line;
-var positions = [0];
+var positions = [];
+var optimize = false;
+let lengthcouldbe = 0;
+function deepcopy(variable) {
+    return JSON.parse(JSON.stringify({ variable })).variable;
+}
 var preprocessor = [
     input => {
         let result = input.split('\n');
@@ -31,8 +36,6 @@ var postprocessor = [
         let frequencies_key = [];
         let frequencies_value = [];
         for (let i = 0; i < positions.length - 1; i++) {
-            if (i === positions.length - 1)
-                break;
             let key = positions.slice(i, i + 2).sort((a, b) => a - b);
             let index = frequencies_key.findIndex(x => x[0] === key[0] && x[1] === key[1]);
             if (index == -1) {
@@ -46,7 +49,7 @@ var postprocessor = [
         let frequencies_key_filtered = [];
         let frequencies_value_filtered = [];
         for (let i = 0; i < frequencies_key.length; i++) {
-            if (frequencies_value[i] === 1) {
+            if (frequencies_value[i][0] === frequencies_value[i][1]) {
                 frequencies_key_filtered.push(frequencies_key[i]);
                 frequencies_value_filtered.push(frequencies_value[i]);
             }
@@ -54,18 +57,19 @@ var postprocessor = [
         frequencies_key = frequencies_key_filtered;
         frequencies_value = frequencies_value_filtered;
         let sorted_frequencies_key = frequencies_key.sort((a, b) => frequencies_value[frequencies_key.indexOf(a)] - frequencies_value[frequencies_key.indexOf(b)]);
+        sorted_frequencies_key.reverse();
         console.log(JSON.parse(JSON.stringify({ sorted_frequencies_key })));
         let possibilities = [];
         for (let i = 0; i < sorted_frequencies_key.length; i++) {
             let index_first = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][0]));
             let index_second = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][1]));
             if (index_first == -1 && index_second == -1) {
-                possibilities.push(sorted_frequencies_key[i]);
+                possibilities.push(deepcopy(sorted_frequencies_key)[i]);
                 continue;
             }
             if (index_first == -1) {
-                let temp = sorted_frequencies_key[i][0];
-                sorted_frequencies_key[i][0] = sorted_frequencies_key[i][1];
+                let temp = deepcopy(sorted_frequencies_key)[i][0];
+                sorted_frequencies_key[i][0] = deepcopy(sorted_frequencies_key)[i][1];
                 sorted_frequencies_key[i][1] = temp;
                 index_first = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][0]));
                 index_second = possibilities.findIndex(x => x.includes(sorted_frequencies_key[i][1]));
@@ -74,13 +78,13 @@ var postprocessor = [
                 let index_first_possibility = possibilities[index_first].indexOf(sorted_frequencies_key[i][0]);
                 let left_first = (index_first_possibility < possibilities[index_first].length / 2);
                 if (left_first) {
-                    possibilities[index_first].splice(index_first_possibility + 1, 0, sorted_frequencies_key[i][1]);
+                    possibilities[index_first].unshift(sorted_frequencies_key[i][1]);
                 }
                 else {
-                    possibilities[index_first].splice(index_first_possibility, 0, sorted_frequencies_key[i][1]);
+                    possibilities[index_first].push(sorted_frequencies_key[i][1]);
                 }
             }
-            else {
+            else if (index_first !== index_second) {
                 let left_first = (possibilities[index_first].indexOf(sorted_frequencies_key[i][0]) < possibilities[index_first].length / 2);
                 if (left_first) {
                     possibilities[index_first].reverse();
@@ -92,6 +96,7 @@ var postprocessor = [
                 possibilities[index_first].push(possibilities[index_second].pop());
             }
         }
+        possibilities[0].unshift(0);
         console.log({ possibilities });
         let newPositions = [];
         for (let i = 0; i < positions.length; i++) {
@@ -100,8 +105,8 @@ var postprocessor = [
         console.log({ positions });
         console.log({ newPositions });
         position = 0;
-        for (let i = 0; i < newPositions.length; i++) {
-            let dif = newPositions[i] - position;
+        for (let i = 0; i < (optimize ? newPositions : positions).length; i++) {
+            let dif = (optimize ? newPositions : positions)[i] - position;
             if (dif < 0) {
                 input = input.replace('*', '<'.repeat(Math.abs(dif)));
             }
@@ -126,6 +131,7 @@ var postprocessor = [
             newSum += Math.abs(newPositions[i] - newPositions[i + 1]);
         }
         console.log(`Reduced from ${sum} to ${newSum} (by ${sum - newSum})`);
+        lengthcouldbe = result.match(/[^\*]/g).length + sum;
         return input;
     },
     input => {
@@ -244,7 +250,7 @@ var functions = {
     add(args) {
         let num = parseInt(args[1]);
         testArgs('add', args, 2);
-        varExists(args[0]);
+        checkVar(args[0]);
         let fac = bestMultiplication(Math.abs(num));
         if (fac[0] + fac[1] + 5 > Math.abs(num)) {
             move(args[0]);
@@ -292,20 +298,20 @@ var functions = {
     },
     clear(args) {
         testArgs('clear', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         move(args[0]);
         result += '[-]';
     },
     set(args) {
         testArgs('set', args, 2);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.clear([args[0]]);
         functions.add([args[0], args[1]]);
     },
     move(args) {
         testArgs('move', args, 2);
-        varExists(args[0]);
-        varExists(args[1]);
+        checkVar(args[0]);
+        checkVar(args[1]);
         move(args[0]);
         result += '[-';
         move(args[1]);
@@ -318,7 +324,7 @@ var functions = {
         let copyTo = args.slice(1);
         let copies = copyTo.length;
         for (let i = 0; i < copies; i++) {
-            varExists(copyTo[i]);
+            checkVar(copyTo[i]);
         }
         functions.move([args[0], 'temp']);
         move('temp');
@@ -335,7 +341,7 @@ var functions = {
         let copyTo = args.slice(1);
         let copies = copyTo.length;
         for (let i = 0; i < copies; i++) {
-            varExists(copyTo[i]);
+            checkVar(copyTo[i]);
         }
         functions.move([args[0], 'temp']);
         move('temp');
@@ -349,9 +355,9 @@ var functions = {
     },
     mulnum(args) {
         testSomeArgs('mulnum', args, [2, 3]);
-        varExists(args[0]);
+        checkVar(args[0]);
         if (args.length == 3) {
-            varExists(args[2]);
+            checkVar(args[2]);
         }
         let num = parseInt(args[1]);
         functions.copy([args[0], 'temp2']);
@@ -365,10 +371,10 @@ var functions = {
     },
     mulvar(args) {
         testSomeArgs('mulvar', args, [2, 3]);
-        varExists(args[0]);
-        varExists(args[1]);
+        checkVar(args[0]);
+        checkVar(args[1]);
         if (args.length == 3) {
-            varExists(args[2]);
+            checkVar(args[2]);
         }
         functions.createVariable(['temp3']);
         functions.copy([args[0], 'temp2']);
@@ -389,7 +395,7 @@ var functions = {
     },
     while(args) {
         testArgs('#while', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         move(args[0]);
         result += '[';
         scopes.push(new Scope('while', args[0]));
@@ -411,13 +417,13 @@ var functions = {
     },
     input(args) {
         testArgs('input', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         move(args[0]);
         result += ',';
     },
     print(args) {
         testArgs('print', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         move(args[0]);
         result += '.';
     },
@@ -430,20 +436,20 @@ var functions = {
     },
     addletter(args) {
         testArgs('addletter', args, 2);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.add([args[0], args[1].charCodeAt(0)]);
     },
     setletter(args) {
         testArgs('setletter', args, 2);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.set([args[0], args[1].charCodeAt(0)]);
     },
     if(args) {
         testArgs('#if', args, 3);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.createVariable(['temp3']);
         if (args[1] == 'var') {
-            varExists(args[2]);
+            checkVar(args[2]);
             functions.move([args[0], 'temp2']);
             functions.while(['temp2']);
             functions.add([args[0], 1]);
@@ -526,14 +532,14 @@ var functions = {
     },
     iftrue(args) {
         testArgs('#iftrue', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.copy([args[0], 'temp2']);
         functions.while(['temp2']);
         functions.clear(['temp2']);
     },
     iffalse(args) {
         testArgs('#iffalse', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.iftrue([args[0]]);
         functions.add(['temp', 1]);
         functions.end([]);
@@ -544,7 +550,7 @@ var functions = {
     ifinrange(args) {
         testArgs('#ifinrange', args, 3);
         let low = parseInt(args[1]);
-        varExists(args[0]);
+        checkVar(args[0]);
         let high = parseInt(args[2]);
         functions.createVariable(['temp3']);
         functions.createVariable(['temp4']);
@@ -581,14 +587,14 @@ var functions = {
     ifletterinrange(args) {
         testArgs('#ifletterinrange', args, 3);
         let low = args[1].charCodeAt(0);
-        varExists(args[0]);
+        checkVar(args[0]);
         let high = args[2].charCodeAt(0);
         functions.ifinrange([args[0], low, high]);
     },
     imove(args) {
         testArgs('imove', args, 2);
-        varExists(args[0]);
-        varExists(args[1]);
+        checkVar(args[0]);
+        checkVar(args[1]);
         functions.while([args[0]]);
         functions.add([args[0], -1]);
         functions.add([args[1], -1]);
@@ -596,8 +602,8 @@ var functions = {
     },
     divnum(args) {
         testArgs('div', args, 3);
-        varExists(args[0]);
-        varExists(args[2]);
+        checkVar(args[0]);
+        checkVar(args[2]);
         functions.createVariable(['temp4']);
         functions.clear(['temp4']);
         let num = parseInt(args[1]);
@@ -613,9 +619,9 @@ var functions = {
     },
     divvar(args) {
         testArgs('div', args, 3);
-        varExists(args[0]);
-        varExists(args[1]);
-        varExists(args[2]);
+        checkVar(args[0]);
+        checkVar(args[1]);
+        checkVar(args[2]);
         functions.createVariable(['temp4']);
         functions.clear(['temp4']);
         functions.move([args[0], 'temp4']);
@@ -630,12 +636,12 @@ var functions = {
     },
     goto(args) {
         testArgs('move', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         move(args[0]);
     },
     printdec(args) {
         testArgs('printdec', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.createVariable(['temp4']);
         functions.createVariable(['printdec-one']);
         functions.createVariable(['printdec-ten']);
@@ -665,15 +671,15 @@ var functions = {
     },
     switch(args) {
         testArgs('switch', args, 2);
-        varExists(args[0]);
-        varExists(args[1]);
+        checkVar(args[0]);
+        checkVar(args[1]);
         functions.move([args[0], 'temp']);
         functions.move([args[1], args[0]]);
         functions.move(['temp', args[1]]);
     },
     for(args) {
         testArgs('#for', args, 1);
-        varExists(args[0]);
+        checkVar(args[0]);
         functions.while([args[0]]);
         functions.add([args[0], -1]);
     },
@@ -761,7 +767,8 @@ var commands = {
     "#ifletterinrange": functions.ifletterinrange,
     "m": arr => move(arr[0]),
 };
-$('#build').on('click', () => {
+function compile(text, opti) {
+    optimize = opti;
     usedmemory = [];
     position = 0;
     positions = [];
@@ -772,7 +779,6 @@ $('#build').on('click', () => {
     enumtypes = new Map();
     enums = new Map();
     line = 0;
-    let text = $('#input').val();
     for (let i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
     }
@@ -792,13 +798,18 @@ $('#build').on('click', () => {
     for (let i = 0; i < postprocessor.length; i++) {
         result = postprocessor[i](result);
     }
-    $('#output').val(result);
+    return result;
+}
+$('#build').on('click', () => {
+    let compiled = compile($('#input').val(), $('#optimizecheck').is(':checked'));
+    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nReduced from ${lengthcouldbe} using optimization`);
 });
 function decopmpile(input) {
     let position = 0;
     let result = '';
     let add = 0;
     let intendation = 0;
+    let inuse = [];
     for (let char of input) {
         if (char === '>') {
             if (add !== 0) {
@@ -815,12 +826,15 @@ function decopmpile(input) {
             position--;
         }
         else if (char === '+') {
+            inuse.push(position);
             add++;
         }
         else if (char === '-') {
+            inuse.push(position);
             add--;
         }
         else if (char === '.') {
+            inuse.push(position);
             if (add !== 0) {
                 result += `${'  '.repeat(intendation)}add v${position} ${add}\n`;
                 add = 0;
@@ -828,6 +842,7 @@ function decopmpile(input) {
             result += `${'  '.repeat(intendation)}print v${position}\n`;
         }
         else if (char === ',') {
+            inuse.push(position);
             if (add !== 0) {
                 result += `${'  '.repeat(intendation)}add v${position} ${add}\n`;
                 add = 0;
@@ -835,6 +850,7 @@ function decopmpile(input) {
             result += `${'  '.repeat(intendation)}input v${position}\n`;
         }
         else if (char === '[') {
+            inuse.push(position);
             if (add !== 0) {
                 result += `${'  '.repeat(intendation)}add v${position} ${add}\n`;
                 add = 0;
@@ -843,6 +859,7 @@ function decopmpile(input) {
             intendation++;
         }
         else if (char === ']') {
+            inuse.push(position);
             if (add !== 0) {
                 result += `${'  '.repeat(intendation)}add v${position} ${add}\n`;
                 add = 0;
@@ -855,10 +872,26 @@ function decopmpile(input) {
         result += `${'  '.repeat(intendation)}add v${position} ${add}\n`;
         add = 0;
     }
+    let inuse2 = [];
+    for (let i = 0; i < inuse.length; i++) {
+        if (inuse2.indexOf(inuse[i]) === -1) {
+            inuse2.push(inuse[i]);
+        }
+    }
+    inuse2.sort((a, b) => a - b);
+    inuse2.reverse();
+    inuse2.forEach(e => {
+        result = `var v${e}\n${result}`;
+    });
     return result;
 }
 $('#decompile').on('click', () => {
     $('#output').val(decopmpile($('#output').val()));
+});
+$('#optimize').on('click', () => {
+    let len = $('#output').val().match(/[+\-<>\.,\[\]]/g).length;
+    let compiled = compile(decopmpile($('#output').val()), true);
+    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nBefore: ${len}`);
 });
 if (localStorage.getItem('bfc-text') === null) {
     localStorage.setItem('bfc-text', '');

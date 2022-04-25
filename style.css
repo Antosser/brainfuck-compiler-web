@@ -69,8 +69,17 @@ textarea {
     color: white;
     font-weight: bold;
     cursor: pointer;
+    display: inline-block;
+}
+.buttons > .withcheckbox {
+    position: relative;
+    top: 2px;
 }
 
 #decompile {
     background-color: #dc3545;
+}
+
+#optimize {
+    background-color: #ffc107;
 }
