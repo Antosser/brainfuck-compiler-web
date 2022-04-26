@@ -136,8 +136,6 @@ var postprocessor: ((data: string) => string)[] = [
                 possibilities[index_first].push(possibilities[index_second].pop());
             }
         }
-        
-        possibilities[0].unshift(0);
 
         // log possibilities
         console.log({possibilities});
@@ -327,7 +325,11 @@ function move(varname: string) {
     result += '*';
 
     position += dif;
-    positions.push(position);
+    if (dif !== 0) {
+        // log positiona and dif
+        console.log(`${position} ${dif} ${varname}`);
+        positions.push(position);
+    }
 }
 
 var functions = {
@@ -927,7 +929,7 @@ function compile(text: string, opti: boolean) {
     optimize = opti;
     usedmemory = [];
     position = 0;
-    positions = [];
+    positions = [0];
     scopes = [new Scope('scope')];
     functions.createVariable(['temp2']);
     functions.createVariable(['temp']);
@@ -964,7 +966,7 @@ function compile(text: string, opti: boolean) {
 $('#build').on('click', () => {
     let compiled = compile($('#input').val() as string, $('#optimizecheck').is(':checked'));
 
-    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nReduced from ${lengthcouldbe} using optimization`);
+    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nReduced from ${lengthcouldbe + 3} using optimization`);
 });
 
 function decopmpile(input: string) {
