@@ -149,6 +149,7 @@ class Scope {
         this.type = type;
         this.variables = new Map();
         this.variable = variable;
+        this.arrays = new Map();
     }
 }
 class BfEnum {
@@ -188,6 +189,24 @@ function getVarIndex(varname) {
     });
     return found;
 }
+function getArrayIndex(arrname) {
+    let found = -1;
+    scopes.forEach(scope => {
+        if (scope.arrays.has(arrname)) {
+            found = scope.arrays.get(arrname)[0];
+        }
+    });
+    return found;
+}
+function getArraySize(arrname) {
+    let found = -1;
+    scopes.forEach(scope => {
+        if (scope.arrays.has(arrname)) {
+            found = scope.arrays.get(arrname)[1];
+        }
+    });
+    return found;
+}
 function varExists(varname) {
     let found = false;
     scopes.forEach(scope => {
@@ -197,9 +216,24 @@ function varExists(varname) {
     });
     return found;
 }
+function arrExists(varname) {
+    let found = false;
+    scopes.forEach(scope => {
+        if (scope.arrays.has(varname)) {
+            found = true;
+        }
+    });
+    return found;
+}
 function checkVar(varname) {
     if (getVarIndex(varname) == -1) {
         $('#output').val(`(Line: ${line}) Error: Variable ${varname} does not exist.`);
+        throw new Error('Code error');
+    }
+}
+function checkArr(varname) {
+    if (!arrExists(varname)) {
+        $('#output').val(`(Line: ${line}) Error: Array ${varname} does not exist.`);
         throw new Error('Code error');
     }
 }
@@ -233,12 +267,15 @@ function bestMultiplication(n) {
 }
 function move(varname) {
     let dif = getVarIndex(varname) - position;
-    result += '*';
     position += dif;
-    if (dif !== 0) {
-        console.log(`${position} ${dif} ${varname}`);
-        positions.push(position);
-    }
+    result += '*';
+    positions.push(position);
+}
+function moveRaw(pos) {
+    let dif = pos - position;
+    position += dif;
+    result += '*';
+    positions.push(position);
 }
 var functions = {
     createVariable(args) {
@@ -298,10 +335,63 @@ var functions = {
             }
         }
     },
+    addRaw(args) {
+        let num = parseInt(args[1]);
+        testArgs('add', args, 2);
+        let fac = bestMultiplication(Math.abs(num));
+        if (fac[0] + fac[1] + 5 > Math.abs(num)) {
+            moveRaw(args[0]);
+            for (let i = 0; i < Math.abs(num); i++) {
+                if (num > 0) {
+                    result += '+';
+                }
+                if (num < 0) {
+                    result += '-';
+                }
+            }
+        }
+        else {
+            move('temp');
+            for (let i = 0; i < Math.floor(fac[0]); i++) {
+                result += '+';
+            }
+            result += '[';
+            moveRaw(args[0]);
+            for (let i = 0; i < Math.floor(fac[1]); i++) {
+                if (num > 0) {
+                    result += '+';
+                }
+                if (num < 0) {
+                    result += '-';
+                }
+            }
+            move('temp');
+            result += '-]';
+            let mo = 1;
+            if (num < 0) {
+                mo *= -1;
+            }
+            moveRaw(args[0]);
+            let dif = num - Math.floor(fac[0]) * Math.floor(fac[1] * mo);
+            for (let i = 0; i < Math.abs(Math.floor(dif)); i++) {
+                if (Math.floor(dif) > 0) {
+                    result += '+';
+                }
+                if (Math.floor(dif) < 0) {
+                    result += '-';
+                }
+            }
+        }
+    },
     clear(args) {
         testArgs('clear', args, 1);
         checkVar(args[0]);
         move(args[0]);
+        result += '[-]';
+    },
+    clearRaw(args) {
+        testArgs('clear', args, 1);
+        moveRaw(args[0]);
         result += '[-]';
     },
     set(args) {
@@ -309,6 +399,11 @@ var functions = {
         checkVar(args[0]);
         functions.clear([args[0]]);
         functions.add([args[0], args[1]]);
+    },
+    setRaw(args) {
+        testArgs('set', args, 2);
+        functions.clearRaw([args[0]]);
+        functions.addRaw([args[0], args[1]]);
     },
     move(args) {
         testArgs('move', args, 2);
@@ -727,6 +822,40 @@ var functions = {
         functions.ifenum(args);
         functions.else([]);
     },
+    arr(args) {
+        testArgs('arr', args, 2);
+        args[1] = parseInt(args[1]);
+        let pos = 0;
+        {
+            let length = 0;
+            for (let i = 0; true; i++) {
+                if (!usedmemory.includes(i)) {
+                    length++;
+                    if (length === args[1] * 2) {
+                        pos = i - length + 1;
+                        break;
+                    }
+                }
+                else {
+                    length = 0;
+                }
+            }
+        }
+        for (let i = pos; i < pos + args[1] * 2; i++) {
+            usedmemory.push(i);
+        }
+        scopes[scopes.length - 1].arrays.set(args[0], [pos, args[1]]);
+        for (let i = 0; i < args[1]; i++) {
+            functions.setRaw([pos + args[1] + i, i]);
+        }
+    },
+    arradd(args) {
+        testArgs('arraddnum', args, 3);
+        checkArr(args[0]);
+        args[1] = parseInt(args[1]);
+        args[2] = parseInt(args[2]);
+        functions.addRaw([getArrayIndex(args[0]) + args[1], args[2]]);
+    },
 };
 var commands = {
     "var": functions.createVariable,
@@ -767,13 +896,14 @@ var commands = {
     "#ifnenum": functions.ifnenum,
     "#ifinrange": functions.ifinrange,
     "#ifletterinrange": functions.ifletterinrange,
-    "m": arr => move(arr[0]),
+    "arr": functions.arr,
+    "arradd": functions.arradd,
 };
 function compile(text, opti) {
     optimize = opti;
     usedmemory = [];
     position = 0;
-    positions = [0];
+    positions = [];
     scopes = [new Scope('scope')];
     functions.createVariable(['temp2']);
     functions.createVariable(['temp']);
@@ -804,7 +934,7 @@ function compile(text, opti) {
 }
 $('#build').on('click', () => {
     let compiled = compile($('#input').val(), $('#optimizecheck').is(':checked'));
-    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nReduced from ${lengthcouldbe + 3} using optimization`);
+    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}`);
 });
 function decopmpile(input) {
     let position = 0;

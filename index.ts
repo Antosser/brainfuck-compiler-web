@@ -206,11 +206,13 @@ class Scope {
     type: string;
     variables: Map<string, number>;
     variable: string | null;
+    arrays: Map<string, [number, number]>;
 
     constructor(type: string, variable?: string) {
         this.type = type;
         this.variables = new Map();
         this.variable = variable;
+        this.arrays = new Map();
     }
 }
 
@@ -260,6 +262,29 @@ function getVarIndex(varname: string): number {
     return found;
 }
 
+function getArrayIndex(arrname: string): number {
+    let found: number = -1;
+
+    scopes.forEach(scope => {
+        if (scope.arrays.has(arrname)) {
+            found = scope.arrays.get(arrname)[0];
+        }
+    });
+
+    return found;
+}
+
+function getArraySize(arrname: string): number {
+    let found: number = -1;
+
+    scopes.forEach(scope => {
+        if (scope.arrays.has(arrname)) {
+            found = scope.arrays.get(arrname)[1];
+        }
+    });
+
+    return found;
+}
 function varExists(varname: any) {
     let found = false;
 
@@ -272,9 +297,28 @@ function varExists(varname: any) {
     return found;
 }
 
+function arrExists(varname: any) {
+    let found = false;
+
+    scopes.forEach(scope => {
+        if (scope.arrays.has(varname)) {
+            found = true;
+        }
+    });
+
+    return found;
+}
+
 function checkVar(varname: string) {
     if (getVarIndex(varname) == -1) {
         $('#output').val(`(Line: ${line}) Error: Variable ${varname} does not exist.`)
+        throw new Error('Code error');
+    }
+}
+
+function checkArr(varname: string) {
+    if (!arrExists(varname)) {
+        $('#output').val(`(Line: ${line}) Error: Array ${varname} does not exist.`)
         throw new Error('Code error');
     }
 }
@@ -315,22 +359,18 @@ function bestMultiplication(n: number) {
 function move(varname: string) {
     let dif = getVarIndex(varname) - position;
 
-    // if (dif < 0) {
-    //     result += '<'.repeat(Math.abs(dif));
-    // }
-    // else if (dif > 0) {
-    //     result += '>'.repeat(Math.abs(dif));
-    // }
-
+    position += dif;
     result += '*';
+    positions.push(position);
+}
+
+function moveRaw(pos: number) {
+    let dif = pos - position;
 
     position += dif;
-    if (dif !== 0) {
-        // log positiona and dif
-        console.log(`${position} ${dif} ${varname}`);
-        positions.push(position);
-    }
-}
+    result += '*';
+    positions.push(position);
+}    
 
 var functions = {
     createVariable(args: any[]) {
@@ -398,10 +438,66 @@ var functions = {
             }
         }
     },
+    addRaw(args: any[]) {
+        let num = parseInt(args[1]);
+
+        testArgs('add', args, 2);
+        // checkVar(args[0]);
+        let fac = bestMultiplication(Math.abs(num));
+        if (fac[0] + fac[1] + 5 > Math.abs(num)) {
+            moveRaw(args[0]);
+            for (let i = 0; i < Math.abs(num); i++) {
+                if (num > 0) {
+                    result += '+';
+                }
+                if (num < 0) {
+                    result += '-';
+                }
+            }
+        }
+        else {
+            move('temp');
+            for (let i = 0; i < Math.floor(fac[0]); i++) {
+                result += '+';
+            }
+            result += '[';
+            moveRaw(args[0]);
+            for (let i = 0; i < Math.floor(fac[1]); i++) {
+                if (num > 0) {
+                    result += '+';
+                }
+                if (num < 0) {
+                    result += '-';
+                }
+            }
+            move('temp');
+            result += '-]';
+            let mo = 1
+            if (num < 0) {
+                mo *= -1
+            }
+            moveRaw(args[0]);
+            let dif = num - Math.floor(fac[0]) * Math.floor(fac[1] * mo)
+            for (let i = 0; i < Math.abs(Math.floor(dif)); i++) {
+                if (Math.floor(dif) > 0) {
+                    result += '+';
+                }
+                if (Math.floor(dif) < 0) {
+                    result += '-';
+                }
+            }
+        }
+    },
     clear(args: any[]) {
         testArgs('clear', args, 1);
         checkVar(args[0]);
         move(args[0]);
+        result += '[-]';
+    },
+    clearRaw(args: any[]) {
+        testArgs('clear', args, 1);
+
+        moveRaw(args[0]);
         result += '[-]';
     },
     set(args: any[]) {
@@ -410,6 +506,13 @@ var functions = {
         functions.clear([args[0]]);
         functions.add([args[0], args[1]]);
     },
+    setRaw(args: any[]) {
+        testArgs('set', args, 2);
+
+        functions.clearRaw([args[0]]);
+        functions.addRaw([args[0], args[1]]);
+    },
+
     move(args: any[]) {
         testArgs('move', args, 2);
         checkVar(args[0]);
@@ -881,6 +984,48 @@ var functions = {
         functions.ifenum(args);
         functions.else([]);
     },
+    arr(args: any[]) {
+        testArgs('arr', args, 2);
+        args[1] = parseInt(args[1]);
+        
+        // First agrs[1] memory is the array data and the second args[1] memory are the indexes
+        // Find consecutive free memory of size args[1]
+        let pos = 0;
+        {
+            let length = 0;
+            
+            for (let i = 0; true; i++) {
+                if (!usedmemory.includes(i)) {
+                    length++;
+                    if (length === args[1]*2) {
+                        pos = i - length + 1;
+                        break;
+                    }
+                } else {
+                    length = 0;
+                }
+            }
+        }
+
+        // Create array
+        for (let i = pos; i < pos + args[1]*2; i++) {
+            usedmemory.push(i);
+        }
+        scopes[scopes.length - 1].arrays.set(args[0], [pos, args[1]]);
+
+        // Set the indexes
+        for (let i = 0; i < args[1]; i++) {
+            functions.setRaw([pos + args[1] + i, i]);
+        }
+    },
+    arradd(args: any[]) {
+        testArgs('arraddnum', args, 3);
+        checkArr(args[0]);
+        args[1] = parseInt(args[1]);
+        args[2] = parseInt(args[2]);
+
+        functions.addRaw([getArrayIndex(args[0]) + args[1], args[2]]);
+    },
 };
 
 var commands = {
@@ -922,14 +1067,16 @@ var commands = {
     "#ifnenum": functions.ifnenum,
     "#ifinrange": functions.ifinrange,
     "#ifletterinrange": functions.ifletterinrange,
-    "m": arr => move(arr[0]),
+    //"m": arr => move(arr[0]),
+    "arr": functions.arr,
+    "arradd": functions.arradd,
 };
 
 function compile(text: string, opti: boolean) {
     optimize = opti;
     usedmemory = [];
     position = 0;
-    positions = [0];
+    positions = [];
     scopes = [new Scope('scope')];
     functions.createVariable(['temp2']);
     functions.createVariable(['temp']);
@@ -966,7 +1113,7 @@ function compile(text: string, opti: boolean) {
 $('#build').on('click', () => {
     let compiled = compile($('#input').val() as string, $('#optimizecheck').is(':checked'));
 
-    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nReduced from ${lengthcouldbe + 3} using optimization`);
+    $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}`);
 });
 
 function decopmpile(input: string) {
