@@ -7,7 +7,7 @@ var enums: Map<string, string>;
 var line: number;
 var positions: number[] = [];
 var optimize = false;
-let lengthcouldbe = 0;
+var lengthcouldbe = 0;
 
 function deepcopy(variable: any) {
     return JSON.parse(JSON.stringify({variable})).variable;
@@ -1111,7 +1111,7 @@ function compile(text: string, opti: boolean) {
 }
 
 $('#build').on('click', () => {
-    let compiled = compile($('#input').val() as string, $('#optimizecheck').is(':checked'));
+    let compiled = compile($('#input').val() as string, true);
 
     $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}`);
 });
@@ -1186,6 +1186,40 @@ function decopmpile(input: string) {
     return result;
 }
 
+// function interpret(input: string) {
+//     let memory = new Array(30000).fill(0);
+//     let position = 0;
+//     let compiledJs = '';
+//     let output = '';
+
+//     for (let char of input) {
+//         switch (char) {
+//             case '>': {
+//                 compiledJs += `position++;\n`;
+//                 break;
+//             }
+//             case '<': {
+//                 compiledJs += `position--;\n`;
+//                 break;
+//             }
+//             case '+': {
+//                 compiledJs += `memory[position]++;\n`;
+//                 break;
+//             }
+//             case '-': {
+//                 compiledJs += `memory[position]--;\n`;
+//                 break;
+//             }
+//             case '.': {
+//                 compiledJs += `output += String.fromCharCode(memory[position]);\n`;
+//                 break;
+//             }
+//             case ',': {
+
+//         }
+//     }
+// }
+
 $('#decompile').on('click', () => {
     $('#output').val(decopmpile($('#output').val() as string));
 });
@@ -1196,6 +1230,10 @@ $('#optimize').on('click', () => {
 
     $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nBefore: ${len}`);
 });
+
+// $('#interpret').on('click', () => {
+//     $('#output').val(interpret($('#output').val() as string));
+// });
 
 // Localstorage
 if (localStorage.getItem('bfc-text') === null) {

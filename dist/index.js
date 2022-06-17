@@ -7,7 +7,7 @@ var enums;
 var line;
 var positions = [];
 var optimize = false;
-let lengthcouldbe = 0;
+var lengthcouldbe = 0;
 function deepcopy(variable) {
     return JSON.parse(JSON.stringify({ variable })).variable;
 }
@@ -933,7 +933,7 @@ function compile(text, opti) {
     return result;
 }
 $('#build').on('click', () => {
-    let compiled = compile($('#input').val(), $('#optimizecheck').is(':checked'));
+    let compiled = compile($('#input').val(), true);
     $('#output').val(compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}`);
 });
 function decopmpile(input) {
