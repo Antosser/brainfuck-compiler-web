@@ -1,88 +1,93 @@
-var a
-var b
+var num1
+var num2
+var focus
+var result
+
+enumtype operations none + - * /
+createenum operation operations
 
 printl Antosser's Brainfuck compiler
 printl For help input e or h
 printl ----------
 
 #scope
-    var input
     var ok
-
     set ok 1
-
     #while ok
+        var input
         input input
 
         var help
-        set help 0
-        var isnumber
-        set isnumber 0
+        set help 0        
 
-        var foundop
-        set foundop 0
+        #ifletterinrange input 0 9
+            #iffalse focus
+                mulnum num1 10
+                copy input num1
+                add num1 -48
+            #end
+            #iftrue focus
+                mulnum num2 10
+                copy input num2
+                add num2 -48
+            #end
+        #end
 
-        #scope
-            
+        #if input letter +
+            setenum operation +
+            set focus 1
+        #end
+        #if input letter -
+            setenum operation -
+            set focus 1
+        #end
+        #if input letter *
+            setenum operation *
+            set focus 1
+        #end
+        #if input letter /
+            setenum operation /
+            set focus 1
+        #end
+
+        #if input letter =
+            clear ok
         #end
 
         #if input letter e
-            set foundop 1
             set help 1
         #end
-        #iffalse foundop
         #if input letter h
-            set foundop 1
-            set help 1
-        #end
-        #end
-        #iffalse foundop
-        #if input letter +
-            set foundop 1
-            
-
-        #end
-        #end
-        #iffalse foundop
-        #if input letter =
-            set foundop 1
-            
-
-        #end
-        #end
-        #iffalse foundop
-        #if input letter -
-            set foundop 1
-            
-
-        #end
-        #end
-        #iffalse foundop
-        #if input letter *
-            set foundop 1
-            
-
-        #end
-        #end
-        #iffalse foundop
-        #if input letter /
-            set foundop 1
-            
-
-        #end
-        #end
-
-        #iffalse foundop
             set help 1
         #end
 
         #iftrue help
+            printl HELP:
             printl Repository: https://github.com/Antosser/brainfuck-compiler-web
             printl Email: antosser@antosser.xyz
             printl ----------
-            printl Syntax: <number1><opation><number2>=
+            printl Syntax: <number1><operation><number2>=
             printl Operations: + - * /
-            printl Example: 69/7=
+            printl Example: 69/3=
+            clear ok
         #end
-    #dnd
+    #end
+#end
+
+#ifenum operation none
+    printl No operation
+#else
+    #ifenum operation +
+        move num1 result
+        move num2 result
+    #end
+    #ifenum operation -
+        move num1 result
+        imove num2 result
+    #end
+    #ifenum operation *
+        mulvar num1 num2 result
+    #end
+
+    printdec result
 #end
