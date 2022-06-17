@@ -236,3 +236,6 @@ Output:
 ```
 It is gif!
 ```
+
+## Thanks to
+* [GitHub Copilot](https://copilot.github.com/) for writing some of the code for me
