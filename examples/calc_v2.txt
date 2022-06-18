@@ -11,14 +11,13 @@ printl For help input e or h
 printl ----------
 
 #scope
-  var ok
-  set ok 1
+  var ok 1
+
   #while ok
     var input
     input input
 
-    var help
-    set help 0        
+    var help 0
 
     #ifletterinrange input 0 9
       #iffalse focus
@@ -88,6 +87,16 @@ printl ----------
   #ifenum operation *
     mulvar num1 num2 result
   #end
+  #ifenum operation /
+    divvar num1 num2 result
+  #end
 
-  printdec result
+  #ifenum operation /
+    printdec num1
+    printl
+    printstr R:
+    printdec result
+  #else
+    printdec num1
+  #end
 #end
