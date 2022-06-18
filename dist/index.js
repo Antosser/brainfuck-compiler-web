@@ -6,7 +6,6 @@ var enumtypes;
 var enums;
 var line;
 var positions = [];
-var optimize = false;
 var lengthcouldbe = 0;
 function deepcopy(variable) {
     return JSON.parse(JSON.stringify({ variable })).variable;
@@ -112,8 +111,8 @@ var postprocessor = [
         console.log({ positions });
         console.log({ newPositions });
         position = 0;
-        for (let i = 0; i < (optimize ? newPositions : positions).length; i++) {
-            let dif = (optimize ? newPositions : positions)[i] - position;
+        for (let i = 0; i < (newPositions).length; i++) {
+            let dif = (newPositions)[i] - position;
             if (dif < 0) {
                 input = input.replace("*", "<".repeat(Math.abs(dif)));
             }
@@ -915,7 +914,6 @@ var commands = {
     arradd: functions.arradd,
 };
 function compile(text, opti) {
-    optimize = opti;
     usedmemory = [];
     position = 0;
     positions = [];
@@ -1047,15 +1045,6 @@ if (localStorage.getItem("bfc-text") === null) {
 else {
     $("#input").val(localStorage.getItem("bfc-text"));
 }
-if (localStorage.getItem("bfc-optimize") === null) {
-    localStorage.setItem("bfc-optimize", "0");
-}
-else {
-    $("#optimizecheck").prop("checked", localStorage.getItem("bfc-optimize") === "1");
-}
-$("#optimizecheck").on("change", () => {
-    localStorage.setItem("bfc-optimize", $("#optimizecheck").is(":checked") ? "1" : "0");
-});
 $("#input").on("input", () => {
     localStorage.setItem("bfc-text", $("#input").val());
 });
