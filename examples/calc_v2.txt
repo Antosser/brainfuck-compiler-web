@@ -97,6 +97,6 @@ printl ----------
     printstr R:
     printdec result
   #else
-    printdec num1
+    printdec result
   #end
 #end
