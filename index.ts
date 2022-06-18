@@ -69,7 +69,7 @@ var postprocessor: ((data: string) => string)[] = [
     let frequencies_key_filtered: [number, number][] = [];
     let frequencies_value_filtered: number[] = [];
     for (let i = 0; i < frequencies_key.length; i++) {
-      if (frequencies_value[i][0] === frequencies_value[i][1]) {
+      if (frequencies_key[i][0] !== frequencies_key[i][1]) {
         frequencies_key_filtered.push(frequencies_key[i]);
         frequencies_value_filtered.push(frequencies_value[i]);
       }
@@ -154,7 +154,8 @@ var postprocessor: ((data: string) => string)[] = [
         }
 
         // Pop second into first
-        possibilities[index_first].push(possibilities[index_second].pop());
+        possibilities[index_first].push(...possibilities[index_second]);
+        possibilities.splice(index_second, 1);
       }
     }
 
