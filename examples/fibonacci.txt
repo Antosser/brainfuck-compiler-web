@@ -8,7 +8,7 @@ set i 13
 
 #for i
   printdec a
-  newl
+  printl
 
   move a c
   move b a

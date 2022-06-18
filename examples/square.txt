@@ -1,6 +1,5 @@
 var o
 addletter o O
-def newl
 
 var i
 add i 6
@@ -10,7 +9,7 @@ add i 6
   #while j
     print o
     add j -1
-  #endwhile
+  #end
   add i -1
-  newl
-#endwhile
+  printl
+#end
