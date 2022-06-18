@@ -622,7 +622,7 @@ var functions = {
         functions.clear(["temp2"]);
     },
     printl(args) {
-        testMoreArgs("printstr", args, 1);
+        testMoreArgs("printstr", args, 0);
         let value = 0;
         let combinedStrings = args.join(" ");
         for (let i = 0; i < combinedStrings.length; i++) {
