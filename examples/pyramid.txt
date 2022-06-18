@@ -1,13 +1,31 @@
 var hash
 setletter hash #
+var space 32
 
-var i
-set i 5
-#for i
-  var j
-  set j 11
-  #for j
-    print hash
+var i 5
+var j 4
+var k 1
+var for
+
+#while i
+  copy j for
+  #while for
+    print space
+    add for -1
   #end
-  newl
+  copy k for
+  #while for
+    print hash
+    add for -1
+  #end
+  copy j for
+  #while for
+    print space
+    add for -1
+  #end
+  printl
+
+  add i -1
+  add j -1
+  add k 2
 #end
