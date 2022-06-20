@@ -7,6 +7,7 @@ var enums;
 var line;
 var positions = [];
 var lengthcouldbe = 0;
+var definedletters;
 function deepcopy(variable) {
     return JSON.parse(JSON.stringify({ variable })).variable;
 }
@@ -616,9 +617,14 @@ var functions = {
         let value = 0;
         let combinedStrings = args.join(" ");
         for (let i = 0; i < combinedStrings.length; i++) {
-            functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
-            value = combinedStrings.charCodeAt(i);
-            functions.print(["temp2"]);
+            if (definedletters.has(combinedStrings[i])) {
+                functions.print([`letter:${combinedStrings[i]}`]);
+            }
+            else {
+                functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
+                value = combinedStrings.charCodeAt(i);
+                functions.print(["temp2"]);
+            }
         }
         functions.clear(["temp2"]);
     },
@@ -627,9 +633,14 @@ var functions = {
         let value = 0;
         let combinedStrings = args.join(" ");
         for (let i = 0; i < combinedStrings.length; i++) {
-            functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
-            value = combinedStrings.charCodeAt(i);
-            functions.print(["temp2"]);
+            if (definedletters.has(combinedStrings[i])) {
+                functions.print([`letter:${combinedStrings[i]}`]);
+            }
+            else {
+                functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
+                value = combinedStrings.charCodeAt(i);
+                functions.print(["temp2"]);
+            }
         }
         functions.add(["temp2", 10 - value]);
         functions.print(["temp2"]);
@@ -871,6 +882,18 @@ var functions = {
         args[2] = parseInt(args[2]);
         functions.addRaw([getArrayIndex(args[0]) + args[1], args[2]]);
     },
+    defletter(args) {
+        testArgs("defineletter", args, 1);
+        if (args[0].length !== 1) {
+            $("#output").val(`(Line: ${line}) Letter must be 1 character`);
+        }
+        if (definedletters.has(args[0])) {
+            $("#output").val(`(Line: ${line}) Letter ${args[0]} already defined`);
+        }
+        functions.createVariable([`letter:${args[0]}`]);
+        definedletters.set(args[0], `letter:${args[0]}`);
+        functions.set([`letter:${args[0]}`, args[0].charCodeAt(0)]);
+    }
 };
 var commands = {
     var: functions.createVariable,
@@ -913,6 +936,7 @@ var commands = {
     "#ifletterinrange": functions.ifletterinrange,
     arr: functions.arr,
     arradd: functions.arradd,
+    defletter: functions.defletter,
 };
 function compile(text, opti) {
     usedmemory = [];
@@ -925,6 +949,7 @@ function compile(text, opti) {
     enumtypes = new Map();
     enums = new Map();
     line = 0;
+    definedletters = new Map;
     for (let i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
     }
