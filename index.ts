@@ -674,7 +674,7 @@ var functions = {
   },
   printletter(args: any[]) {
     testArgs("printletter", args, 1);
-    functions.set(["temp2", args[0].charCodeAt(0)]);
+    functions.set(["temp2", args[0].replace(/\{\{space\}\}/g, ' ').charCodeAt(0)]);
     move("temp2");
     result += ".";
     functions.clear(["temp2"]);
@@ -767,7 +767,7 @@ var functions = {
     testMoreArgs("printstr", args, 1);
 
     let value = 0;
-    let combinedStrings = args.join(" ");
+    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, ' ');
     for (let i = 0; i < combinedStrings.length; i++) {
       if (definedletters.has(combinedStrings[i])) {
         functions.print([`letter:${combinedStrings[i]}`])
@@ -784,7 +784,7 @@ var functions = {
     testMoreArgs("printl", args, 0);
 
     let value = 0;
-    let combinedStrings = args.join(" ");
+    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, ' ');
     for (let i = 0; i < combinedStrings.length; i++) {
       if (definedletters.has(combinedStrings[i])) {
         functions.print([`letter:${combinedStrings[i]}`])
@@ -1081,6 +1081,9 @@ var functions = {
   },
   defletter(args: any[]) {
     testArgs("defineletter", args, 1);
+
+    // Replace {{space}} with space
+    args[0] = args[0].replace(/\{\{space\}\}/g, " ");
 
     if (args[0].length !== 1) {
       $("#output").val(`(Line: ${line}) Letter must be 1 character`);
