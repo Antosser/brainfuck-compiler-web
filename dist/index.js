@@ -8,6 +8,7 @@ var line;
 var positions = [];
 var lengthcouldbe = 0;
 var definedletters;
+var arrays;
 function deepcopy(variable) {
     return JSON.parse(JSON.stringify({ variable })).variable;
 }
@@ -887,14 +888,22 @@ var functions = {
         args[0] = args[0].replace(/\{\{space\}\}/g, " ");
         if (args[0].length !== 1) {
             $("#output").val(`(Line: ${line}) Letter must be 1 character`);
+            throw new Error("Code error");
         }
         if (definedletters.has(args[0])) {
             $("#output").val(`(Line: ${line}) Letter ${args[0]} already defined`);
+            throw new Error("Code error");
         }
         functions.createVariable([`letter:${args[0]}`]);
         definedletters.set(args[0], `letter:${args[0]}`);
         functions.set([`letter:${args[0]}`, args[0].charCodeAt(0)]);
-    }
+    },
+    createArray(args) {
+        testArgs("createarray", args, 2);
+        if (arrays.has(args[0])) {
+            throw new Error("Code error");
+        }
+    },
 };
 var commands = {
     var: functions.createVariable,
@@ -938,6 +947,7 @@ var commands = {
     arr: functions.arr,
     arradd: functions.arradd,
     defletter: functions.defletter,
+    createarray: functions.createArray,
 };
 function compile(text, opti) {
     usedmemory = [];
@@ -947,10 +957,11 @@ function compile(text, opti) {
     functions.createVariable(["temp2"]);
     functions.createVariable(["temp"]);
     result = "";
-    enumtypes = new Map();
-    enums = new Map();
+    enumtypes = new Map;
+    enums = new Map;
     line = 0;
     definedletters = new Map;
+    arrays = new Map;
     for (let i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
     }
