@@ -1,21 +1,20 @@
-var usedmemory: number[];
-var position: number;
-var result: string;
-var scopes: Scope[];
-var enumtypes: Map<string, BfEnum>;
-var enums: Map<string, string>;
-var line: number;
-var positions: number[] = [];
-var lengthcouldbe = 0;
-var definedletters: Map<String, String>;
-var arrays: Map<String, {position: number, size: number}>;
+let usedmemory: number[];
+let position: number;
+let result: string;
+let scopes: Scope[];
+let enumtypes: Map<string, BfEnum>;
+let enums: Map<string, string>;
+let line: number;
+let positions: number[] = [];
+let definedletters: Map<String, String>;
+let arrays: Map<String, { position: number; size: number }>;
 
 function deepcopy(variable: any) {
   return JSON.parse(JSON.stringify({ variable })).variable;
 }
 
-var preprocessor: ((data: string) => string)[] = [
-  // Trim each line
+let preprocessor: ((data: string) => string)[] = [
+  // trim each line
   (input) => {
     let result = input.split("\n");
     for (let i = 0; i < result.length; i++) {
@@ -44,21 +43,17 @@ var preprocessor: ((data: string) => string)[] = [
       .join("\n"),
 ];
 
-var postprocessor: ((data: string) => string)[] = [
+let postprocessor: ((data: string) => string)[] = [
   // Optimize
   (input) => {
     let frequencies_key: [number, number][] = [];
     let frequencies_value: number[] = [];
 
     for (let i = 0; i < positions.length - 1; i++) {
-      let key: [number, number] = positions
-        .slice(i, i + 2)
-        .sort((a, b) => a - b) as [number, number];
+      let key: [number, number] = positions.slice(i, i + 2).sort((a, b) => a - b) as [number, number];
 
       // Check if array is already in the array
-      let index = frequencies_key.findIndex(
-        (x) => x[0] === key[0] && x[1] === key[1]
-      );
+      let index = frequencies_key.findIndex((x) => x[0] === key[0] && x[1] === key[1]);
       if (index == -1) {
         frequencies_key.push(key);
         frequencies_value.push(1);
@@ -80,11 +75,7 @@ var postprocessor: ((data: string) => string)[] = [
     frequencies_value = frequencies_value_filtered;
 
     // Sort frequencies by value into array of keys without modifying the original array
-    let sorted_frequencies_key: [number, number][] = frequencies_key.sort(
-      (a, b) =>
-        frequencies_value[frequencies_key.indexOf(a)] -
-        frequencies_value[frequencies_key.indexOf(b)]
-    );
+    let sorted_frequencies_key: [number, number][] = frequencies_key.sort((a, b) => frequencies_value[frequencies_key.indexOf(a)] - frequencies_value[frequencies_key.indexOf(b)]);
     sorted_frequencies_key.reverse();
     console.log(JSON.parse(JSON.stringify({ sorted_frequencies_key })));
 
@@ -92,13 +83,9 @@ var postprocessor: ((data: string) => string)[] = [
 
     for (let i = 0; i < sorted_frequencies_key.length; i++) {
       // Find index of possibility that includes the first element of key
-      let index_first = possibilities.findIndex((x) =>
-        x.includes(sorted_frequencies_key[i][0])
-      );
+      let index_first = possibilities.findIndex((x) => x.includes(sorted_frequencies_key[i][0]));
       // Find index of possibility that includes the second element of key
-      let index_second = possibilities.findIndex((x) =>
-        x.includes(sorted_frequencies_key[i][1])
-      );
+      let index_second = possibilities.findIndex((x) => x.includes(sorted_frequencies_key[i][1]));
 
       if (index_first == -1 && index_second == -1) {
         possibilities.push(deepcopy(sorted_frequencies_key)[i]);
@@ -110,23 +97,16 @@ var postprocessor: ((data: string) => string)[] = [
         let temp = deepcopy(sorted_frequencies_key)[i][0];
         sorted_frequencies_key[i][0] = deepcopy(sorted_frequencies_key)[i][1];
         sorted_frequencies_key[i][1] = temp;
-        index_first = possibilities.findIndex((x) =>
-          x.includes(sorted_frequencies_key[i][0])
-        );
-        index_second = possibilities.findIndex((x) =>
-          x.includes(sorted_frequencies_key[i][1])
-        );
+        index_first = possibilities.findIndex((x) => x.includes(sorted_frequencies_key[i][0]));
+        index_second = possibilities.findIndex((x) => x.includes(sorted_frequencies_key[i][1]));
       }
 
       if (index_second == -1) {
         // Get the index of the first possibility with the first element of key
-        let index_first_possibility = possibilities[index_first].indexOf(
-          sorted_frequencies_key[i][0]
-        );
+        let index_first_possibility = possibilities[index_first].indexOf(sorted_frequencies_key[i][0]);
 
         // Check if possibilities[index_first] is on the left side
-        let left_first =
-          index_first_possibility < possibilities[index_first].length / 2;
+        let left_first = index_first_possibility < possibilities[index_first].length / 2;
 
         // Put the second element of key to the side of possibility
         if (left_first) {
@@ -136,9 +116,7 @@ var postprocessor: ((data: string) => string)[] = [
         }
       } else if (index_first !== index_second) {
         // Check if possibilities[index_first] is on the left side
-        let left_first =
-          possibilities[index_first].indexOf(sorted_frequencies_key[i][0]) <
-          possibilities[index_first].length / 2;
+        let left_first = possibilities[index_first].indexOf(sorted_frequencies_key[i][0]) < possibilities[index_first].length / 2;
 
         // Reverse if true
         if (left_first) {
@@ -146,9 +124,7 @@ var postprocessor: ((data: string) => string)[] = [
         }
 
         // Check if possibilities[index_second] is on the left side
-        let left_second =
-          possibilities[index_second].indexOf(sorted_frequencies_key[i][1]) <
-          possibilities[index_second].length / 2;
+        let left_second = possibilities[index_second].indexOf(sorted_frequencies_key[i][1]) < possibilities[index_second].length / 2;
 
         // Reverse if false
         if (!left_second) {
@@ -174,8 +150,8 @@ var postprocessor: ((data: string) => string)[] = [
 
     position = 0;
 
-    for (let i = 0; i < (newPositions).length; i++) {
-      let dif = (newPositions)[i] - position;
+    for (let i = 0; i < newPositions.length; i++) {
+      let dif = newPositions[i] - position;
 
       if (dif < 0) {
         input = input.replace("*", "<".repeat(Math.abs(dif)));
@@ -204,8 +180,6 @@ var postprocessor: ((data: string) => string)[] = [
 
     console.log(`Reduced from ${sum} to ${newSum} (by ${sum - newSum})`);
 
-    lengthcouldbe = result.match(/[^\*]/g).length + sum;
-
     return input;
   },
 
@@ -227,7 +201,7 @@ var postprocessor: ((data: string) => string)[] = [
 class Scope {
   type: string;
   variables: Map<string, number>;
-  variable: string | null;
+  variable: string | undefined;
   arrays: Map<string, [number, number]>;
 
   constructor(type: string, variable?: string) {
@@ -255,27 +229,19 @@ class BfEnum {
 
 function testArgs(name: string, args: string[], len: number) {
   if (args.length != len) {
-    $("#output").val(
-      `(Line: ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`
-    );
+    $("#output").val(`(Line: ${line}) Error: ${name} accepts ${len} arguments but ${args.length} were given.`);
     throw new Error("Code error");
   }
 }
 function testMoreArgs(name: string, args: string[], len: number) {
   if (args.length < len) {
-    $("#output").val(
-      `(Line: ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`
-    );
+    $("#output").val(`(Line: ${line}) Error: ${name} accepts ${len} or more arguments but ${args.length} were given.`);
     throw new Error("Code error");
   }
 }
 function testSomeArgs(name: string, args: string[], len: number[]) {
   if (len.indexOf(args.length) == -1) {
-    $("#output").val(
-      `(Line: ${line}) Error: mulvar accepts ${len.join(
-        " or "
-      )} arguments but ${args.length} were given.`
-    );
+    $("#output").val(`(Line: ${line}) Error: mullet accepts ${len.join(" or ")} arguments but ${args.length} were given.`);
     throw new Error("Code error");
   }
 }
@@ -285,7 +251,7 @@ function getVarIndex(varname: string): number {
 
   scopes.forEach((scope) => {
     if (scope.variables.has(varname)) {
-      found = scope.variables.get(varname);
+      found = scope.variables.get(varname) as number;
     }
   });
 
@@ -297,35 +263,35 @@ function getArrayIndex(arrname: string): number {
 
   scopes.forEach((scope) => {
     if (scope.arrays.has(arrname)) {
-      found = scope.arrays.get(arrname)[0];
+      found = (scope.arrays.get(arrname) as number[])[0];
     }
   });
 
   return found;
 }
 
-function getArraySize(arrname: string): number {
-  let found: number = -1;
+// function getArraySize(arrname: string): number {
+//   let found: number = -1;
 
-  scopes.forEach((scope) => {
-    if (scope.arrays.has(arrname)) {
-      found = scope.arrays.get(arrname)[1];
-    }
-  });
+//   scopes.forEach((scope) => {
+//     if (scope.arrays.has(arrname)) {
+//       found = (scope.arrays.get(arrname) as number[])[1];
+//     }
+//   });
 
-  return found;
-}
-function varExists(varname: any) {
-  let found = false;
+//   return found;
+// }
+// function varExists(varname: any) {
+//   let found = false;
 
-  scopes.forEach((scope) => {
-    if (scope.variables.has(varname)) {
-      found = true;
-    }
-  });
+//   scopes.forEach((scope) => {
+//     if (scope.variables.has(varname)) {
+//       found = true;
+//     }
+//   });
 
-  return found;
-}
+//   return found;
+// }
 
 function arrExists(varname: any) {
   let found = false;
@@ -341,9 +307,7 @@ function arrExists(varname: any) {
 
 function checkVar(varname: string) {
   if (getVarIndex(varname) == -1) {
-    $("#output").val(
-      `(Line: ${line}) Error: Variable ${varname} does not exist.`
-    );
+    $("#output").val(`(Line: ${line}) Error: Variable ${varname} does not exist.`);
     throw new Error("Code error");
   }
 }
@@ -404,7 +368,7 @@ function moveRaw(pos: number) {
   positions.push(position);
 }
 
-var functions = {
+let functions = {
   createVariable(args: any[]) {
     testSomeArgs("var", args, [1, 2]);
 
@@ -637,7 +601,7 @@ var functions = {
     move("temp");
     result += "[]-[]";
   },
-  while(args) {
+  while(args: any[]) {
     testArgs("#while", args, 1);
     checkVar(args[0]);
     move(args[0]);
@@ -646,14 +610,14 @@ var functions = {
   },
   end(args: any[]) {
     testArgs("end", args, 0);
-    let popped = scopes.pop();
+    let popped = scopes.pop() as Scope;
 
     for (let i = 0; i < popped.variables.size; i++) {
       usedmemory.pop();
     }
 
     if (popped.type == "while") {
-      move(popped.variable);
+      move(popped.variable as string);
       result += "]";
     }
   },
@@ -675,7 +639,7 @@ var functions = {
   },
   printletter(args: any[]) {
     testArgs("printletter", args, 1);
-    functions.set(["temp2", args[0].replace(/\{\{space\}\}/g, ' ').charCodeAt(0)]);
+    functions.set(["temp2", args[0].replace(/\{\{space\}\}/g, " ").charCodeAt(0)]);
     move("temp2");
     result += ".";
     functions.clear(["temp2"]);
@@ -768,12 +732,11 @@ var functions = {
     testMoreArgs("printstr", args, 1);
 
     let value = 0;
-    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, ' ');
+    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, " ");
     for (let i = 0; i < combinedStrings.length; i++) {
       if (definedletters.has(combinedStrings[i])) {
-        functions.print([`letter:${combinedStrings[i]}`])
-      }
-      else {
+        functions.print([`letter:${combinedStrings[i]}`]);
+      } else {
         functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
         value = combinedStrings.charCodeAt(i);
         functions.print(["temp2"]);
@@ -785,12 +748,11 @@ var functions = {
     testMoreArgs("printl", args, 0);
 
     let value = 0;
-    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, ' ');
+    let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, " ");
     for (let i = 0; i < combinedStrings.length; i++) {
       if (definedletters.has(combinedStrings[i])) {
-        functions.print([`letter:${combinedStrings[i]}`])
-      }
-      else {
+        functions.print([`letter:${combinedStrings[i]}`]);
+      } else {
         functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
         value = combinedStrings.charCodeAt(i);
         functions.print(["temp2"]);
@@ -996,19 +958,12 @@ var functions = {
       $("#output").val(`(Line: ${line}) No enum ${args[0]} exists`);
       throw new Error("Code error");
     }
-    if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
-      $("#output").val(
-        `(Line: ${line}) Enum type ${enums.get(
-          args[0]
-        )} does not have a property: ${args[1]}`
-      );
+    if (!(enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
+      $("#output").val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
       throw new Error("Code error");
     }
 
-    functions.set([
-      args[0],
-      enumtypes.get(enums.get(args[0])).assignments.get(args[1]),
-    ]);
+    functions.set([args[0], (enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
   },
   ifenum(args: any[]) {
     testMoreArgs("#ifenum", args, 2);
@@ -1017,20 +972,12 @@ var functions = {
       $("#output").val(`(Line: ${line}) No enum ${args[0]} exists`);
       throw new Error("Code error");
     }
-    if (!enumtypes.get(enums.get(args[0])).assignments.has(args[1])) {
-      $("#output").val(
-        `(Line: ${line}) Enum type ${enums.get(
-          args[0]
-        )} does not have a property: ${args[1]}`
-      );
+    if (!(enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
+      $("#output").val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
       throw new Error("Code error");
     }
 
-    functions.if([
-      args[0],
-      "num",
-      enumtypes.get(enums.get(args[0])).assignments.get(args[1]),
-    ]);
+    functions.if([args[0], "num", (enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
   },
   ifnenum(args: any[]) {
     testMoreArgs("#ifenum", args, 2);
@@ -1111,7 +1058,7 @@ var functions = {
   },
 };
 
-var commands = {
+let commands: { [key: string]: any } = {
   var: functions.createVariable,
   add: functions.add,
   addletter: functions.addletter,
@@ -1157,7 +1104,7 @@ var commands = {
   createarray: functions.createArray,
 };
 
-function compile(text: string, opti: boolean) {
+function compile(text: string) {
   usedmemory = [];
   position = 0;
   positions = [];
@@ -1165,11 +1112,11 @@ function compile(text: string, opti: boolean) {
   functions.createVariable(["temp2"]);
   functions.createVariable(["temp"]);
   result = "";
-  enumtypes = new Map;
-  enums = new Map;
+  enumtypes = new Map();
+  enums = new Map();
   line = 0;
-  definedletters = new Map;
-  arrays = new Map;
+  definedletters = new Map();
+  arrays = new Map();
 
   for (let i = 0; i < preprocessor.length; i++) {
     text = preprocessor[i](text);
@@ -1181,11 +1128,9 @@ function compile(text: string, opti: boolean) {
     line++;
     argsSplit[i] = args[i].split(" ");
     if (commands.hasOwnProperty(argsSplit[i][0])) {
-      commands[argsSplit[i][0]](argsSplit[i].slice(1));
+      (commands[argsSplit[i][0]] as (args: any[]) => void)(argsSplit[i].slice(1));
     } else {
-      $("#output").val(
-        `(Line: ${line}) Error: Command ${argsSplit[i][0]} does not exist.`
-      );
+      $("#output").val(`(Line: ${line}) Error: Command ${argsSplit[i][0]} does not exist.`);
       throw new Error("Error");
     }
   }
@@ -1198,11 +1143,9 @@ function compile(text: string, opti: boolean) {
 }
 
 $("#build").on("click", () => {
-  let compiled = compile($("#input").val() as string, true);
+  let compiled = compile($("#input").val() as string);
 
-  $("#output").val(
-    compiled + `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}`
-  );
+  $("#output").val(compiled + `\n\nLength: ${(compiled.match(/[+\-<>\.,\[\]]/g) as RegExpMatchArray).length}`);
 });
 
 function decopmpile(input: string) {
@@ -1283,7 +1226,7 @@ function decopmpile(input: string) {
   inuse2.reverse();
 
   inuse2.forEach((e) => {
-    result = `var v${e}\n${result}`;
+    result = `let v${e}\n${result}`;
   });
 
   return result;
@@ -1328,13 +1271,10 @@ $("#decompile").on("click", () => {
 });
 
 $("#optimize").on("click", () => {
-  let len = ($("#output").val() as string).match(/[+\-<>\.,\[\]]/g).length;
-  let compiled = compile(decopmpile($("#output").val() as string), true);
+  let len = (($("#output").val() as string).match(/[+\-<>\.,\[\]]/g) as RegExpMatchArray).length;
+  let compiled = compile(decopmpile($("#output").val() as string));
 
-  $("#output").val(
-    compiled +
-      `\n\nLength: ${compiled.match(/[+\-<>\.,\[\]]/g).length}\nBefore: ${len}`
-  );
+  $("#output").val(compiled + `\n\nLength: ${(compiled.match(/[+\-<>\.,\[\]]/g) as RegExpMatchArray).length}\nBefore: ${len}`);
 });
 
 // $('#interpret').on('click', () => {
@@ -1345,7 +1285,7 @@ $("#optimize").on("click", () => {
 if (localStorage.getItem("bfc-text") === null) {
   localStorage.setItem("bfc-text", "");
 } else {
-  $("#input").val(localStorage.getItem("bfc-text"));
+  $("#input").val(localStorage.getItem("bfc-text") as string);
 }
 
 $("#input").on("input", () => {
@@ -1357,3 +1297,5 @@ $("#rmLocalStorage").click(() => {
   $("#output").val("");
   localStorage.setItem("bfc-text", "");
 });
+
+export {};
