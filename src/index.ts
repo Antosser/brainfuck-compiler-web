@@ -8,6 +8,7 @@ let line: number;
 let positions: number[] = [];
 let definedletters: Map<String, String>;
 let arrays: Map<String, { position: number; size: number }>;
+let scopeWasCreated: boolean;
 
 function deepcopy(variable: any) {
   return JSON.parse(JSON.stringify({ variable })).variable;
@@ -209,6 +210,7 @@ class Scope {
     this.variables = new Map();
     this.variable = variable;
     this.arrays = new Map();
+    scopeWasCreated = true;
   }
 }
 
@@ -381,7 +383,11 @@ let functions = {
     usedmemory.push(getAvailablePosition());
 
     if (args.length == 2) {
-      functions.set([args[0], args[1]]);
+      if (scopeWasCreated === true) {
+        functions.set([args[0], args[1]]);
+      } else {
+        functions.add([args[0], args[1]]);
+      }
     }
   },
   add(args: any[]) {
@@ -1117,6 +1123,7 @@ function compile(text: string) {
   line = 0;
   definedletters = new Map();
   arrays = new Map();
+  scopeWasCreated = false;
 
   for (let i = 0; i < preprocessor.length; i++) {
     text = preprocessor[i](text);
