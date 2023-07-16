@@ -1233,7 +1233,7 @@ function decopmpile(input: string) {
     inuse2.reverse();
 
     inuse2.forEach((e) => {
-        result = `let v${e}\n${result}`;
+        result = `var v${e}\n${result}`;
     });
 
     return result;
