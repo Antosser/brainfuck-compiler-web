@@ -8,7 +8,7 @@ let line: number;
 let positions: number[] = [];
 let definedletters: Map<String, String>;
 let arrays: Map<String, { position: number; size: number }>;
-let scopeWasCreated: boolean;
+let touched_memory: Set<number>;
 
 function deepcopy(variable: any) {
     return JSON.parse(JSON.stringify({ variable })).variable;
@@ -210,7 +210,6 @@ class Scope {
         this.variables = new Map();
         this.variable = variable;
         this.arrays = new Map();
-        scopeWasCreated = true;
     }
 }
 
@@ -383,15 +382,13 @@ let functions = {
         usedmemory.push(getAvailablePosition());
 
         if (args.length == 2) {
-            if (scopeWasCreated === true) {
-                functions.set([args[0], args[1]]);
-            } else {
-                functions.add([args[0], args[1]]);
-            }
+            functions.set([args[0], args[1]]);
         }
     },
     add(args: any[]) {
         let num = parseInt(args[1]);
+
+        touched_memory.add(getVarIndex(args[0]));
 
         testArgs("add", args, 2);
         checkVar(args[0]);
@@ -442,6 +439,8 @@ let functions = {
     addRaw(args: any[]) {
         let num = parseInt(args[1]);
 
+        touched_memory.add(getVarIndex(args[0]));
+
         testArgs("add", args, 2);
         // checkVar(args[0]);
         let fac = bestMultiplication(Math.abs(num));
@@ -491,14 +490,19 @@ let functions = {
     clear(args: any[]) {
         testArgs("clear", args, 1);
         checkVar(args[0]);
-        move(args[0]);
-        result += "[-]";
+
+        if (touched_memory.has(getVarIndex(args[0]))) {
+            move(args[0]);
+            result += "[-]";
+        }
     },
     clearRaw(args: any[]) {
         testArgs("clear", args, 1);
 
-        moveRaw(args[0]);
-        result += "[-]";
+        if (touched_memory.has(getVarIndex(args[0]))) {
+            moveRaw(args[0]);
+            result += "[-]";
+        }
     },
     set(args: any[]) {
         testArgs("set", args, 2);
@@ -532,6 +536,8 @@ let functions = {
 
         for (let i = 0; i < copies; i++) {
             checkVar(copyTo[i]);
+
+            touched_memory.add(getVarIndex(copyTo[i]));
         }
         functions.move([args[0], "temp"]);
         move("temp");
@@ -551,6 +557,8 @@ let functions = {
 
         for (let i = 0; i < copies; i++) {
             checkVar(copyTo[i]);
+
+            touched_memory.add(getVarIndex(copyTo[i]));
         }
         functions.move([args[0], "temp"]);
         move("temp");
@@ -1123,7 +1131,7 @@ function compile(text: string) {
     line = 0;
     definedletters = new Map();
     arrays = new Map();
-    scopeWasCreated = false;
+    touched_memory = new Set([0, 1]);
 
     for (let i = 0; i < preprocessor.length; i++) {
         text = preprocessor[i](text);
