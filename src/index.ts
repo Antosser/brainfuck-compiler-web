@@ -1,12 +1,12 @@
-let usedmemory: number[];
+let used_memory: number[];
 let position: number;
 let result: string;
 let scopes: Scope[];
-let enumtypes: Map<string, BfEnum>;
+let enum_types: Map<string, BfEnum>;
 let enums: Map<string, string>;
 let line: number;
 let positions: number[] = [];
-let definedletters: Map<String, String>;
+let defined_letters: Map<String, String>;
 let arrays: Map<String, { position: number; size: number }>;
 let touched_memory: Set<number>;
 
@@ -321,17 +321,17 @@ function checkArr(varname: string) {
 }
 
 function getAvailablePosition() {
-    if (usedmemory.length == 0) {
+    if (used_memory.length == 0) {
         return 0;
     }
 
-    for (let i = 0; i < Math.max(...usedmemory); i++) {
-        if (usedmemory.indexOf(i) == -1) {
+    for (let i = 0; i < Math.max(...used_memory); i++) {
+        if (used_memory.indexOf(i) == -1) {
             return i;
         }
     }
 
-    return Math.max(...usedmemory) + 1;
+    return Math.max(...used_memory) + 1;
 }
 
 function bestMultiplication(n: number) {
@@ -379,7 +379,7 @@ let functions = {
         // }
 
         scopes[scopes.length - 1].variables.set(args[0], getAvailablePosition());
-        usedmemory.push(getAvailablePosition());
+        used_memory.push(getAvailablePosition());
 
         if (args.length == 2) {
             functions.set([args[0], args[1]]);
@@ -627,7 +627,7 @@ let functions = {
         let popped = scopes.pop() as Scope;
 
         for (let i = 0; i < popped.variables.size; i++) {
-            usedmemory.pop();
+            used_memory.pop();
         }
 
         if (popped.type == "while") {
@@ -748,7 +748,7 @@ let functions = {
         let value = 0;
         let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, " ");
         for (let i = 0; i < combinedStrings.length; i++) {
-            if (definedletters.has(combinedStrings[i])) {
+            if (defined_letters.has(combinedStrings[i])) {
                 functions.print([`letter:${combinedStrings[i]}`]);
             } else {
                 functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
@@ -764,7 +764,7 @@ let functions = {
         let value = 0;
         let combinedStrings = args.join(" ").replace(/\{\{space\}\}/g, " ");
         for (let i = 0; i < combinedStrings.length; i++) {
-            if (definedletters.has(combinedStrings[i])) {
+            if (defined_letters.has(combinedStrings[i])) {
                 functions.print([`letter:${combinedStrings[i]}`]);
             } else {
                 functions.add(["temp2", combinedStrings.charCodeAt(i) - value]);
@@ -953,12 +953,12 @@ let functions = {
     enumtype(args: any[]) {
         testMoreArgs("enumtype", args, 2);
 
-        enumtypes.set(args[0], new BfEnum(args.splice(1)));
+        enum_types.set(args[0], new BfEnum(args.splice(1)));
     },
     createenum(args: any[]) {
         testArgs("createeum", args, 2);
 
-        if (!enumtypes.has(args[1])) {
+        if (!enum_types.has(args[1])) {
             $("#output").val(`(Line: ${line}) No enum type ${args[1]} exists`);
             throw new Error("Code error");
         }
@@ -972,12 +972,12 @@ let functions = {
             $("#output").val(`(Line: ${line}) No enum ${args[0]} exists`);
             throw new Error("Code error");
         }
-        if (!(enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
+        if (!(enum_types.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
             $("#output").val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
             throw new Error("Code error");
         }
 
-        functions.set([args[0], (enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
+        functions.set([args[0], (enum_types.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
     },
     ifenum(args: any[]) {
         testMoreArgs("#ifenum", args, 2);
@@ -986,12 +986,12 @@ let functions = {
             $("#output").val(`(Line: ${line}) No enum ${args[0]} exists`);
             throw new Error("Code error");
         }
-        if (!(enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
+        if (!(enum_types.get(enums.get(args[0]) as string) as BfEnum).assignments.has(args[1])) {
             $("#output").val(`(Line: ${line}) Enum type ${enums.get(args[0])} does not have a property: ${args[1]}`);
             throw new Error("Code error");
         }
 
-        functions.if([args[0], "num", (enumtypes.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
+        functions.if([args[0], "num", (enum_types.get(enums.get(args[0]) as string) as BfEnum).assignments.get(args[1])]);
     },
     ifnenum(args: any[]) {
         testMoreArgs("#ifenum", args, 2);
@@ -1010,7 +1010,7 @@ let functions = {
             let length = 0;
 
             for (let i = 0; true; i++) {
-                if (!usedmemory.includes(i)) {
+                if (!used_memory.includes(i)) {
                     length++;
                     if (length === args[1] * 2) {
                         pos = i - length + 1;
@@ -1024,7 +1024,7 @@ let functions = {
 
         // Create array
         for (let i = pos; i < pos + args[1] * 2; i++) {
-            usedmemory.push(i);
+            used_memory.push(i);
         }
         scopes[scopes.length - 1].arrays.set(args[0], [pos, args[1]]);
 
@@ -1052,13 +1052,13 @@ let functions = {
             throw new Error("Code error");
         }
 
-        if (definedletters.has(args[0])) {
+        if (defined_letters.has(args[0])) {
             $("#output").val(`(Line: ${line}) Letter ${args[0]} already defined`);
             throw new Error("Code error");
         }
 
         functions.createVariable([`letter:${args[0]}`]);
-        definedletters.set(args[0], `letter:${args[0]}`);
+        defined_letters.set(args[0], `letter:${args[0]}`);
 
         functions.set([`letter:${args[0]}`, args[0].charCodeAt(0)]);
     },
@@ -1119,17 +1119,17 @@ let commands: { [key: string]: any } = {
 };
 
 function compile(text: string) {
-    usedmemory = [];
+    used_memory = [];
     position = 0;
     positions = [];
     scopes = [new Scope("scope")];
     functions.createVariable(["temp2"]);
     functions.createVariable(["temp"]);
     result = "";
-    enumtypes = new Map();
+    enum_types = new Map();
     enums = new Map();
     line = 0;
-    definedletters = new Map();
+    defined_letters = new Map();
     arrays = new Map();
     touched_memory = new Set([0, 1]);
 
