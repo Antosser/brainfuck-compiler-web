@@ -38,9 +38,8 @@ Don't put ; at the end of any line.
 - **print** {variable} - Print ASCII character of variable
 - **printletter** {character} - Print character
 - **printstr** {string} - Print string
-- **printl** {string} - Print string ending with \n
+- **printl** {string} - Print string ending with \n or ends line if no arguments are passed in
 - **printdec** {variable} - Print variable as decimal integer
-- **newl** - End line
 - **space** - Print space
 
 #### Scoping
@@ -126,7 +125,7 @@ printl Hello World!
 printstr Hello World!
 
 // End the line
-newl
+printl
 
 // Create variable num and set it to 123
 var num
