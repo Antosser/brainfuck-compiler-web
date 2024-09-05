@@ -19,7 +19,7 @@ Don't put ; at the end of any line.
 #### Assignment
 - **var** {variable} - Create variable
 - **move** {variable1} {variable2} - Move value of variable1 to variable2
-- **swtich** {variable1} {variable2} - Switch values of variable1 and variable2
+- **switch** {variable1} {variable2} - Switch values of variable1 and variable2
 - **copy** {variable1} {variable2} (variable3) ...- Copy value of varaiable1 to variable2 and optioanally var3, var4, ...
 - **set** {variable} {number} - Set value to to a variable
 - **clear** {variable} - Set variable's value to 0
@@ -218,10 +218,10 @@ enumtype imageextensions jpg png gif
 // Create variable that contains one of: jpg, png, gif
 createenum myextension imageextensions
 
-// Set it to png
+// Set it to gif
 setenum myextension gif
 
-// Check if extension is png
+// Check the extension
 #ifenum myextension png
   printl It is png!
 #end
