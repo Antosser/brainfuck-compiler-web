@@ -1,5 +1,5 @@
 # [Online Brainfuck compiler](https://brainfuck.cyrrrt.me/)
-brainfuck was designed to be the hardest programming language ever, but I made a tool to compile easy-to-read code to brainfuck.
+Brainfuck was designed to be the hardest programming language ever, but I made a tool to compile easy-to-read code to brainfuck.
 
 ## Usage
 1. Go to [this link.](https://brainfuck.cyrrrt.me/)
